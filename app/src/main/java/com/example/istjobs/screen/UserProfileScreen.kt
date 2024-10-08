@@ -10,10 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.istjobs.nav.Screens // Make sure to import the Screens object
+import com.example.istjobs.nav.Screens
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun UserProfileScreen(navController: NavHostController) {
+    val db = remember { FirebaseFirestore.getInstance() }
+
     var name by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
@@ -108,14 +111,27 @@ fun UserProfileScreen(navController: NavHostController) {
 
         // Save Button
         Button(onClick = {
-            // Handle save logic here (e.g., save user profile data)
-            // You can add a ViewModel or repository logic to save the profile information
+            // Handle save logic here
+            val userId = "user_id_placeholder" // Replace with the actual user ID
+            val userData = hashMapOf(
+                "name" to name,
+                "gender" to gender,
+                "address" to address,
+                "phoneNumber" to phoneNumber
+            )
 
-            // After saving the profile, navigate to the UserDashboardScreen
-            navController.navigate(Screens.UserDashboardScreen.route) {
-                // Clear the back stack if needed
-                popUpTo(Screens.UserProfileScreen.route) { inclusive = true }
-            }
+            // Save user profile data to Firestore
+            db.collection("users").document(userId)
+                .set(userData)
+                .addOnSuccessListener {
+                    navController.navigate(Screens.UserDashboardScreen.route) {
+                        // Clear the back stack if needed
+                        popUpTo(Screens.UserProfileScreen.route) { inclusive = true }
+                    }
+                }
+                .addOnFailureListener { e ->
+                    // Handle the error (e.g., show a message)
+                }
         }) {
             Text("Save Profile")
         }

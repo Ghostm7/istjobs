@@ -20,12 +20,14 @@ import com.example.istjobs.R
 import com.example.istjobs.nav.Screens
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun UserSignupScreen(
     navController: NavHostController
 ) {
     val auth = remember { FirebaseAuth.getInstance() }
+    val db = remember { FirebaseFirestore.getInstance() } // Initialize Firestore instance
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -130,7 +132,7 @@ fun UserSignupScreen(
                         }
 
                         if (password == confirmPassword) {
-                            signUp(auth, trimmedEmail, password, { user ->
+                            signUp(auth, db, trimmedEmail, password, { user ->
                                 // Navigate to LoginScreen upon successful signup
                                 navController.navigate(Screens.UserLoginScreen.route) {
                                     popUpTo(Screens.UserSignupScreen.route) { inclusive = true }
@@ -173,12 +175,36 @@ private fun isEmailValid(email: String): Boolean {
     return email.isNotBlank() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
 
-// Firebase sign up function
-private fun signUp(auth: FirebaseAuth, email: String, password: String, onSuccess: (FirebaseUser?) -> Unit, onFailure: (String) -> Unit) {
+// Firebase sign-up function that adds user data to Firestore
+private fun signUp(
+    auth: FirebaseAuth,
+    db: FirebaseFirestore,
+    email: String,
+    password: String,
+    onSuccess: (FirebaseUser?) -> Unit,
+    onFailure: (String) -> Unit
+) {
     auth.createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                onSuccess(auth.currentUser)
+                val user = auth.currentUser
+                val userData = hashMapOf(
+                    "email" to email,
+                    "role" to "user" // Define the role of the user (can be "user" or "admin")
+                )
+
+                // Add the user data to Firestore
+                user?.let {
+                    db.collection("users")
+                        .document(it.uid) // Use user's UID as document ID
+                        .set(userData)
+                        .addOnSuccessListener {
+                            onSuccess(user) // Firestore data added successfully
+                        }
+                        .addOnFailureListener { e ->
+                            onFailure("Failed to add user data to Firestore: ${e.message}")
+                        }
+                }
             } else {
                 val errorMessage = task.exception?.message ?: "Sign up failed"
                 if (errorMessage.contains("email address is already in use", ignoreCase = true)) {

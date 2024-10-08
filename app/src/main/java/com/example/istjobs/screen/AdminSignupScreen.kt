@@ -19,6 +19,7 @@ import androidx.navigation.NavHostController
 import com.example.istjobs.R
 import com.example.istjobs.nav.Screens
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.FirebaseUser
 
 @Composable
@@ -26,6 +27,8 @@ fun AdminSignupScreen(
     navController: NavHostController
 ) {
     val auth = remember { FirebaseAuth.getInstance() }
+    val db = remember { FirebaseFirestore.getInstance() }
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -114,12 +117,10 @@ fun AdminSignupScreen(
                 Button(
                     onClick = {
                         val trimmedEmail = email.trim()  // Trim any whitespace
-                        println("Email entered: '$trimmedEmail'")  // Log the exact input
 
                         // Validate email format
                         if (!isEmailValid(trimmedEmail)) {
                             errorMessage = "Please enter a valid email address."
-                            println("Invalid email format")
                             return@Button
                         }
 
@@ -130,7 +131,7 @@ fun AdminSignupScreen(
                         }
 
                         if (password == confirmPassword) {
-                            signUp(auth, trimmedEmail, password, { user ->
+                            signUp(auth, db, trimmedEmail, password, { user ->
                                 navController.navigate(Screens.AdminLoginScreen.route) {
                                     popUpTo(Screens.AdminSignupScreen.route) { inclusive = true }
                                 }
@@ -172,11 +173,36 @@ private fun isEmailValid(email: String): Boolean {
     return email.isNotBlank() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
 
-private fun signUp(auth: FirebaseAuth, email: String, password: String, onSuccess: (FirebaseUser?) -> Unit, onFailure: (String) -> Unit) {
+// Function to handle admin sign-up and store in Firestore
+private fun signUp(
+    auth: FirebaseAuth,
+    db: FirebaseFirestore,
+    email: String,
+    password: String,
+    onSuccess: (FirebaseUser?) -> Unit,
+    onFailure: (String) -> Unit
+) {
     auth.createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                onSuccess(auth.currentUser)
+                val currentUser = auth.currentUser
+
+                // Store the newly created admin in Firestore under the "admins" collection
+                currentUser?.let { user ->
+                    val adminData = hashMapOf(
+                        "email" to email,
+                        "uid" to user.uid
+                    )
+
+                    db.collection("admins").document(user.uid)
+                        .set(adminData)
+                        .addOnSuccessListener {
+                            onSuccess(user) // Proceed to the next screen
+                        }
+                        .addOnFailureListener { e ->
+                            onFailure("Failed to store admin data: ${e.message}")
+                        }
+                } ?: onFailure("Failed to create the admin user.")
             } else {
                 val errorMessage = task.exception?.message ?: "Sign up failed"
                 if (errorMessage.contains("email address is already in use", ignoreCase = true)) {
