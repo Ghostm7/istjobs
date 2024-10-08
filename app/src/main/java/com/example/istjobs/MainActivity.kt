@@ -17,11 +17,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.istjobs.nav.NavGraph
 import com.example.istjobs.screen.UserLoginScreen
 import com.example.istjobs.ui.theme.IstjobsTheme
+import com.example.istjobs.utils.JobViewModel
 import com.example.istjobs.utils.SharedViewModel
 
 class MainActivity : ComponentActivity() {
     // Lazy initialization of the SharedViewModel using viewModels()
     private val sharedViewModel: SharedViewModel by viewModels()
+    private val jobViewModel: JobViewModel by viewModels() // Add this line to initialize JobViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +43,7 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
 
                     // Pass navController and sharedViewModel to the navigation graph
-                    NavGraph(navController = navController, sharedViewModel = sharedViewModel)
+                    NavGraph(navController = navController, sharedViewModel = sharedViewModel, jobViewModel = jobViewModel)
                 }
             }
         }

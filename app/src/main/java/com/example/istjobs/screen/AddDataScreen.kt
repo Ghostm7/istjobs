@@ -13,12 +13,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import com.example.istjobs.utils.JobViewModel
 import com.example.istjobs.utils.SharedViewModel
 import com.example.istjobs.utils.UserData
 import kotlinx.coroutines.launch
 
 @Composable
-fun AddDataScreen(navController: NavController, sharedViewModel: SharedViewModel) {
+fun AddDataScreen(navController: NavHostController, sharedViewModel: SharedViewModel, jobViewModel: JobViewModel) {
     var userID by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var profession by remember { mutableStateOf("") }

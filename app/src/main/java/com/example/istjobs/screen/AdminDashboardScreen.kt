@@ -57,7 +57,7 @@ fun AdminDashboardScreen(navController: NavHostController) {
                 DashboardItem(
                     imageRes = R.drawable.jobsicon, // Replace with your jobs image
                     label = "Jobs",
-                    onClick = { navController.navigate(Screens.JobsScreen.route) }
+                    onClick = { navController.navigate(Screens.AddJobScreen.route) }
                 )
                 DashboardItem(
                     imageRes = R.drawable.candidatesicon, // Replace with your candidates image
