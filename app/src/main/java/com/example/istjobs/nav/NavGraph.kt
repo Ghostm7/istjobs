@@ -59,5 +59,10 @@ fun NavGraph(
         composable(route = Screens.AddDataScreen.route) {
             AddDataScreen(navController = navController, sharedViewModel = sharedViewModel)
         }
+
+        // Add the JobsScreen composable here
+        composable(route = Screens.JobsScreen.route) {
+            JobsScreen(navController = navController) // Ensure you have created this function
+        }
     }
 }
