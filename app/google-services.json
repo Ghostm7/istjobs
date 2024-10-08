@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1054241005372",
+    "project_id": "istjobs",
+    "storage_bucket": "istjobs.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1054241005372:android:466f8e0524f7399ae9c839",
+        "android_client_info": {
+          "package_name": "com.example.istjobs"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_4SHDUFpvOTSItmrgMuPeRqmSEJz0-jw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
