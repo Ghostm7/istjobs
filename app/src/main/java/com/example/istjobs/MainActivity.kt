@@ -11,8 +11,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.istjobs.nav.NavGraph
 import com.example.istjobs.screen.UserLoginScreen
@@ -21,9 +19,9 @@ import com.example.istjobs.utils.JobViewModel
 import com.example.istjobs.utils.SharedViewModel
 
 class MainActivity : ComponentActivity() {
-    // Lazy initialization of the SharedViewModel using viewModels()
+    // Using lazy initialization for SharedViewModel and JobViewModel
     private val sharedViewModel: SharedViewModel by viewModels()
-    private val jobViewModel: JobViewModel by viewModels() // Add this line to initialize JobViewModel
+    private val jobViewModel: JobViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,9 +29,11 @@ class MainActivity : ComponentActivity() {
         // Enable edge-to-edge display support
         enableEdgeToEdge()
 
-        // Setting up the Compose content
+        // Set the content view using Jetpack Compose
         setContent {
-            // Applying the app's theme
+            // Fetch jobs from Firestore
+            jobViewModel.fetchJobs() // Ensure this method is implemented in your JobViewModel
+
             IstjobsTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
                     // Create the navigation controller
                     val navController = rememberNavController()
 
-                    // Pass navController and sharedViewModel to the navigation graph
+                    // Pass the navigation controller and ViewModels to the navigation graph
                     NavGraph(navController = navController, sharedViewModel = sharedViewModel, jobViewModel = jobViewModel)
                 }
             }
@@ -53,8 +53,9 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun SignupScreenPreview() {
         IstjobsTheme {
-            // Preview the LoginScreen with a sample NavController and ViewModel
-            UserLoginScreen(navController = rememberNavController(), sharedViewModel = viewModel())
+            // Preview the LoginScreen with a sample NavController and SharedViewModel
+            val navController = rememberNavController()
+            UserLoginScreen(navController = navController, sharedViewModel = sharedViewModel)
         }
     }
 }

@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import com.example.istjobs.data.Job
 import com.example.istjobs.nav.Screens
 import com.example.istjobs.utils.JobViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun SearchJobsScreen(navController: NavHostController, jobViewModel: JobViewModel) {
@@ -25,6 +26,17 @@ fun SearchJobsScreen(navController: NavHostController, jobViewModel: JobViewMode
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Go Back Button
+        Button(onClick = {
+            navController.navigate(Screens.UserDashboardScreen.route) {
+                popUpTo(Screens.UserDashboardScreen.route) { inclusive = true }
+            }
+        }) {
+            Text("Go Back")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Text(
             text = "Search Jobs",
             style = MaterialTheme.typography.headlineMedium,
@@ -58,7 +70,7 @@ fun SearchJobsScreen(navController: NavHostController, jobViewModel: JobViewMode
 
         if (filteredJobs.isNotEmpty()) {
             for (job in filteredJobs) {
-                JobItem(job, navController)
+                JobCard(job, navController) // Renamed to JobCard for clarity
                 Spacer(modifier = Modifier.height(8.dp))
             }
         } else {
@@ -68,9 +80,11 @@ fun SearchJobsScreen(navController: NavHostController, jobViewModel: JobViewMode
 }
 
 @Composable
-fun JobItem(job: Job, navController: NavHostController) {
+fun JobCard(job: Job, navController: NavHostController) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -84,8 +98,23 @@ fun JobItem(job: Job, navController: NavHostController) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(onClick = {
-                // Navigate to Application Form Screen
-                navController.navigate(Screens.ApplicationFormScreen.route + "?jobId=${job.id}")
+                // Save the application to Firestore
+                val applicationData = hashMapOf(
+                    "jobId" to job.id,
+                    "userId" to "user_id_placeholder", // Replace with the actual user ID
+                    "status" to "pending" // Set initial status
+                )
+
+                val db = FirebaseFirestore.getInstance()
+                db.collection("applications").add(applicationData)
+                    .addOnSuccessListener {
+                        // Navigate to a confirmation screen or show a Snackbar
+                        navController.navigate(Screens.ApplicationConfirmationScreen.route)
+                    }
+                    .addOnFailureListener { e ->
+                        // Handle error
+                        e.printStackTrace() // Log the error for debugging
+                    }
             }) {
                 Text("Apply")
             }

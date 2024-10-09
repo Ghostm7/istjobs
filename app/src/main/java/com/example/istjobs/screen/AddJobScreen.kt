@@ -1,8 +1,6 @@
 package com.example.istjobs.screen
 
-import android.app.DatePickerDialog
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,7 +12,6 @@ import androidx.navigation.NavHostController
 import com.example.istjobs.data.Job
 import com.example.istjobs.utils.JobViewModel
 import com.example.istjobs.nav.Screens
-import androidx.compose.ui.platform.LocalContext
 import java.util.*
 
 @Composable
@@ -25,29 +22,6 @@ fun AddJobScreen(navController: NavHostController, jobViewModel: JobViewModel) {
     var startDate by remember { mutableStateOf("") }
     var expiryDate by remember { mutableStateOf("") }
     var vacancies by remember { mutableStateOf("") }
-
-    // Get current context
-    val context = LocalContext.current
-
-    // Function to show DatePicker
-    fun showDatePicker(isStartDate: Boolean) {
-        val calendar = Calendar.getInstance()
-        val datePickerDialog = DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                val selectedDate = "$dayOfMonth/${month + 1}/$year"
-                if (isStartDate) {
-                    startDate = selectedDate
-                } else {
-                    expiryDate = selectedDate
-                }
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        )
-        datePickerDialog.show()
-    }
 
     Column(
         modifier = Modifier
@@ -96,23 +70,15 @@ fun AddJobScreen(navController: NavHostController, jobViewModel: JobViewModel) {
         // Start Date Input
         OutlinedTextField(
             value = startDate,
-            onValueChange = {},
-            label = { Text("Start Date") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showDatePicker(true) }, // Show date picker on click
-            readOnly = true // Make it read-only to avoid keyboard pop-up
+            onValueChange = { startDate = it },
+            label = { Text("Start Date (e.g., 01/01/2024)") }
         )
 
         // Expiry Date Input
         OutlinedTextField(
             value = expiryDate,
-            onValueChange = {},
-            label = { Text("Expiry Date") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showDatePicker(false) }, // Show date picker on click
-            readOnly = true // Make it read-only to avoid keyboard pop-up
+            onValueChange = { expiryDate = it },
+            label = { Text("Expiry Date (e.g., 01/31/2024)") }
         )
 
         // Vacancies Input
@@ -127,7 +93,7 @@ fun AddJobScreen(navController: NavHostController, jobViewModel: JobViewModel) {
         Button(onClick = {
             // Generate a unique String ID for the new Job
             val newJob = Job(
-                id = UUID.randomUUID().toString(), // Generate a unique ID as a String
+                id = UUID.randomUUID().toString(),
                 title = title,
                 description = description,
                 company = company,
@@ -135,8 +101,8 @@ fun AddJobScreen(navController: NavHostController, jobViewModel: JobViewModel) {
                 expiryDate = expiryDate,
                 vacancies = vacancies.toIntOrNull() ?: 0
             )
-            jobViewModel.addJob(newJob)
-            navController.navigate(Screens.AdminDashboardScreen.route)
+            jobViewModel.addJob(newJob) // Add the job to the ViewModel
+            navController.navigate(Screens.AdminDashboardScreen.route) // Navigate back
         }) {
             Text("Add Job")
         }

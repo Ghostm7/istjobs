@@ -7,6 +7,8 @@ import androidx.navigation.compose.composable
 import com.example.istjobs.screen.*
 import com.example.istjobs.utils.JobViewModel // Import JobViewModel
 import com.example.istjobs.utils.SharedViewModel // Import SharedViewModel
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 @Composable
 fun NavGraph(
@@ -59,7 +61,11 @@ fun NavGraph(
         }
 
         composable(route = Screens.AddDataScreen.route) {
-            AddDataScreen(navController = navController, sharedViewModel = sharedViewModel, jobViewModel = jobViewModel)
+            AddDataScreen(
+                navController = navController,
+                sharedViewModel = sharedViewModel,
+                jobViewModel = jobViewModel
+            )
         }
 
         // Add this line to include AddJobScreen
@@ -75,17 +81,40 @@ fun NavGraph(
             UserProfileScreen(navController)
         }
 
-        // Add the ApplicationFormScreen composable
-        composable(route = Screens.ApplicationFormScreen.route) { backStackEntry ->
-            // Retrieve the Job object from the back stack arguments if needed
-            val jobId = backStackEntry.arguments?.getString("jobId") // Assuming you pass jobId as an argument
-            val job = jobViewModel.jobs.find { it.id.toString() == jobId } // Find job by ID
+        // Add ProfileScreen route
+        composable(route = Screens.ProfileScreen.route) {
+            ProfileScreen(navController)
+        }
+        composable(route = Screens.ApplicationConfirmationScreen.route) {
+            ApplicationConfirmationScreen(navController = navController)
+        }
 
-            // Navigate to ApplicationFormScreen
-            job?.let {
-                ApplicationFormScreen(navController = navController, job = it)
+        // Add HistoryScreen route
+        composable(route = Screens.HistoryScreen.route) {
+            HistoryScreen(navController = navController)
+        }
+
+
+        // Add AdminCandidatesScreen route
+        composable(route = Screens.AdminCandidatesScreen.route) {
+            AdminCandidatesScreen(navController = navController, jobViewModel = jobViewModel)
+        }
+
+        // Add JobDetailScreen route
+        composable(
+            route = "${Screens.JobDetailScreen.route}/{jobId}", // Use the correct format for parameters
+            arguments = listOf(navArgument("jobId") { type = NavType.StringType }) // Specify jobId argument
+        ) { backStackEntry ->
+            val jobId = backStackEntry.arguments?.getString("jobId")
+            // Make sure to pass jobViewModel to JobDetailScreen
+            if (jobId != null) {
+                JobDetailScreen(jobId = jobId, jobViewModel = jobViewModel, navController = navController)
             }
         }
 
+
+
+
     }
 }
+

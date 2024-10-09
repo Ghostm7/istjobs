@@ -35,7 +35,7 @@ fun AdminDashboardScreen(navController: NavHostController) {
             // IST Logo on top
             Image(
                 modifier = Modifier
-                    .size(100.dp) // Increased size of IST logo
+                    .size(100.dp)
                     .clip(CircleShape),
                 painter = painterResource(R.drawable.isticon),
                 contentDescription = "IST Logo"
@@ -55,14 +55,14 @@ fun AdminDashboardScreen(navController: NavHostController) {
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 DashboardItem(
-                    imageRes = R.drawable.jobsicon, // Replace with your jobs image
+                    imageRes = R.drawable.jobsicon,
                     label = "Jobs",
                     onClick = { navController.navigate(Screens.AddJobScreen.route) }
                 )
                 DashboardItem(
-                    imageRes = R.drawable.candidatesicon, // Replace with your candidates image
+                    imageRes = R.drawable.candidatesicon,
                     label = "Candidates",
-                    onClick = { navController.navigate(Screens.UserSignupScreen.route) }
+                    onClick = { navController.navigate(Screens.AdminCandidatesScreen.route) }
                 )
             }
 
@@ -73,14 +73,14 @@ fun AdminDashboardScreen(navController: NavHostController) {
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 DashboardItem(
-                    imageRes = R.drawable.profile, // Replace with your profile image
+                    imageRes = R.drawable.profile,
                     label = "Profile",
                     onClick = { navController.navigate(Screens.ProfileScreen.route) }
                 )
                 DashboardItem(
-                    imageRes = R.drawable.logout, // Replace with your logout image
+                    imageRes = R.drawable.logout,
                     label = "Logout",
-                    onClick = { navController.navigate(Screens.InitialScreen.route) } // Navigate to InitialScreen
+                    onClick = { navController.navigate(Screens.InitialScreen.route) }
                 )
             }
         }
@@ -100,7 +100,7 @@ fun DashboardItem(imageRes: Int, label: String, onClick: () -> Unit) {
         Image(
             painter = painterResource(imageRes),
             contentDescription = label,
-            modifier = Modifier.size(80.dp) // Adjust size as necessary
+            modifier = Modifier.size(80.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = label, style = MaterialTheme.typography.bodyMedium)
