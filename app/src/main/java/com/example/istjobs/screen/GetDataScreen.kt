@@ -14,16 +14,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.istjobs.utils.SharedViewModel
-import com.example.istjobs.utils.UserData
+import com.example.istjobs.models.UserData
 import kotlinx.coroutines.launch
 
 @Composable
 fun GetDataScreen(navController: NavController, sharedViewModel: SharedViewModel) {
-    var userID by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var profession by remember { mutableStateOf("") }
-    var age by remember { mutableStateOf("") }
-    var ageInt by remember { mutableStateOf(0) }
+    var userId by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var role by remember { mutableStateOf("") }
 
     // For handling messages
     var message by remember { mutableStateOf("") }
@@ -52,16 +50,16 @@ fun GetDataScreen(navController: NavController, sharedViewModel: SharedViewModel
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // userID Input Field
+            // User ID Input Field
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(0.6f),
-                    value = userID,
-                    onValueChange = { userID = it },
-                    label = { Text(text = "UserID") }
+                    value = userId,
+                    onValueChange = { userId = it },
+                    label = { Text(text = "User ID") }
                 )
 
                 // Get User Data Button
@@ -70,22 +68,20 @@ fun GetDataScreen(navController: NavController, sharedViewModel: SharedViewModel
                         .padding(start = 10.dp)
                         .width(100.dp),
                     onClick = {
-                        if (userID.isNotEmpty()) {
+                        if (userId.isNotEmpty()) {
                             // Launch coroutine to retrieve data
                             coroutineScope.launch {
-                                val data = sharedViewModel.retrieveData(userID, context) // Pass context here
-                                data?.let {
-                                    username = it.username
-                                    profession = it.profession
-                                    age = it.age.toString()
-                                    ageInt = it.age
+                                val data = sharedViewModel.retrieveData(userId, context) // Pass context here
+                                if (data != null) {
+                                    email = data.email
+                                    role = data.role
                                     message = "Data retrieved successfully!"
-                                } ?: run {
-                                    message = "No data found for UserID: $userID"
+                                } else {
+                                    message = "No data found for User ID: $userId"
                                 }
                             }
                         } else {
-                            Toast.makeText(context, "UserID cannot be empty!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "User ID cannot be empty!", Toast.LENGTH_SHORT).show()
                         }
                     }
                 ) {
@@ -93,36 +89,20 @@ fun GetDataScreen(navController: NavController, sharedViewModel: SharedViewModel
                 }
             }
 
-            // Name Input Field
+            // Email Input Field
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = username,
-                onValueChange = { username = it },
-                label = { Text(text = "Name") }
+                value = email,
+                onValueChange = { email = it },
+                label = { Text(text = "Email") }
             )
 
-            // Profession Input Field
+            // Role Input Field
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = profession,
-                onValueChange = { profession = it },
-                label = { Text(text = "Profession") }
-            )
-
-            // Age Input Field
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = age,
-                onValueChange = {
-                    age = it
-                    ageInt = if (age.isNotEmpty() && age.all { char -> char.isDigit() }) {
-                        age.toInt()
-                    } else {
-                        0
-                    }
-                },
-                label = { Text(text = "Age") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                value = role,
+                onValueChange = { role = it },
+                label = { Text(text = "Role") }
             )
 
             // Save Button
@@ -131,13 +111,12 @@ fun GetDataScreen(navController: NavController, sharedViewModel: SharedViewModel
                     .padding(top = 50.dp)
                     .fillMaxWidth(),
                 onClick = {
-                    if (userID.isNotEmpty() && username.isNotEmpty() && profession.isNotEmpty() && ageInt > 0) {
+                    if (userId.isNotEmpty() && email.isNotEmpty() && role.isNotEmpty()) {
                         // Create UserData object
                         val userData = UserData(
-                            userID = userID,
-                            username = username,
-                            profession = profession,
-                            age = ageInt
+                            email = email,
+                            role = role,
+                            userId = userId
                         )
 
                         // Launch coroutine to save data
@@ -145,10 +124,9 @@ fun GetDataScreen(navController: NavController, sharedViewModel: SharedViewModel
                             sharedViewModel.saveData(userData, context) // Pass context here
                             message = "Data saved successfully!"
                             // Reset fields
-                            userID = ""
-                            username = ""
-                            profession = ""
-                            age = ""
+                            userId = ""
+                            email = ""
+                            role = ""
                         }
                     } else {
                         Toast.makeText(context, "Please fill all fields!", Toast.LENGTH_SHORT).show()
@@ -164,19 +142,18 @@ fun GetDataScreen(navController: NavController, sharedViewModel: SharedViewModel
                     .padding(top = 20.dp)
                     .fillMaxWidth(),
                 onClick = {
-                    if (userID.isNotEmpty()) {
+                    if (userId.isNotEmpty()) {
                         // Launch coroutine to delete data
                         coroutineScope.launch {
-                            sharedViewModel.deleteData(userID, context) // Pass context here
+                            sharedViewModel.deleteData(userId, context) // Pass context here
                             message = "Data deleted successfully!"
                             // Reset fields
-                            userID = ""
-                            username = ""
-                            profession = ""
-                            age = ""
+                            userId = ""
+                            email = ""
+                            role = ""
                         }
                     } else {
-                        Toast.makeText(context, "UserID cannot be empty for deletion!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "User ID cannot be empty for deletion!", Toast.LENGTH_SHORT).show()
                     }
                 }
             ) {

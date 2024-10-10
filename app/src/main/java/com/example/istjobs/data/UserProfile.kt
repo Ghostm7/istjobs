@@ -1,11 +1,11 @@
 package com.example.istjobs.data
 
 data class UserProfile(
-    var userId: String = "",
-    var name: String = "",
-    var gender: String = "",
-    var address: String = "",
-    var phoneNumber: String = "",
-    var qualifications: String = "",
-    var experience: String = ""
+    val userId: String,
+    val name: String,
+    val gender: String,
+    val address: String,
+    val phoneNumber: String,
+    val qualifications: String,
+    val experience: String
 )

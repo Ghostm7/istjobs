@@ -14,6 +14,8 @@ import com.example.istjobs.data.Job
 import com.example.istjobs.nav.Screens
 import com.example.istjobs.utils.JobViewModel
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.auth.FirebaseAuth
+
 
 @Composable
 fun SearchJobsScreen(navController: NavHostController, jobViewModel: JobViewModel) {
@@ -98,26 +100,64 @@ fun JobCard(job: Job, navController: NavHostController) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(onClick = {
-                // Save the application to Firestore
-                val applicationData = hashMapOf(
-                    "jobId" to job.id,
-                    "userId" to "user_id_placeholder", // Replace with the actual user ID
-                    "status" to "pending" // Set initial status
-                )
+                // Get the current user ID from Firebase Auth
+                val auth = FirebaseAuth.getInstance()
+                val userId = auth.currentUser?.uid // Get the current user ID
 
-                val db = FirebaseFirestore.getInstance()
-                db.collection("applications").add(applicationData)
-                    .addOnSuccessListener {
-                        // Navigate to a confirmation screen or show a Snackbar
-                        navController.navigate(Screens.ApplicationConfirmationScreen.route)
+                // Check if userId is null, indicating that the user is not logged in
+                if (userId != null) {
+                    // Get the current user's profile data from Firestore
+                    val db = FirebaseFirestore.getInstance()
+                    val userProfileRef = db.collection("userProfiles").document(userId)
+                    userProfileRef.get().addOnSuccessListener { document ->
+                        if (document != null && document.exists()) {
+                            val profileData = document.data
+
+                            // Extract the necessary fields from the profile data
+                            val name = profileData?.get("name") as? String ?: ""
+                            val gender = profileData?.get("gender") as? String ?: ""
+                            val address = profileData?.get("address") as? String ?: ""
+                            val phoneNumber = profileData?.get("phoneNumber") as? String ?: ""
+                            val qualifications = profileData?.get("qualifications") as? String ?: ""
+                            val experience = profileData?.get("experience") as? String ?: ""
+
+                            // Create the application data with all the necessary fields
+                            val applicationData = hashMapOf(
+                                "userId" to userId, // Use the actual user ID
+                                "name" to name, // Use the extracted name
+                                "gender" to gender, // Use the extracted gender
+                                "address" to address, // Use the extracted address
+                                "phoneNumber" to phoneNumber, // Use the extracted phone number
+                                "qualifications" to qualifications, // Use the extracted qualifications
+                                "experience" to experience, // Use the extracted experience
+                                "status" to "pending" // Set initial status
+                            )
+
+                            // Save the application data to the 'applied' collection
+                            db.collection("applied").add(applicationData)
+                                .addOnSuccessListener {
+                                    // Navigate to a confirmation screen or show a Snackbar
+                                    navController.navigate(Screens.ApplicationConfirmationScreen.route)
+                                }
+                                .addOnFailureListener { e ->
+                                    // Handle error
+                                    e.printStackTrace() // Log the error for debugging
+                                }
+                        } else {
+                            // Handle case where user profile data is not found
+                            println("User  profile data not found.")
+                            // You might want to show a Snackbar or Toast here to inform the user
+                        }
                     }
-                    .addOnFailureListener { e ->
-                        // Handle error
-                        e.printStackTrace() // Log the error for debugging
-                    }
+                } else {
+                    // Handle case where user is not logged in
+                    println("User  is not logged in.")
+                    // You might want to show a Snackbar or Toast here to inform the user
+                }
             }) {
                 Text("Apply")
             }
+
         }
     }
 }

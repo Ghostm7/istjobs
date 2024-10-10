@@ -121,8 +121,10 @@ fun AdminLoginScreen(
                 Button(
                     onClick = {
                         coroutineScope.launch {
-                            sharedViewModel.signIn(email, password) {
-                                navController.navigate(Screens.AdminDashboardScreen.route)
+                            sharedViewModel.signIn(email, password, "admin") { isSuccess ->
+                                if (isSuccess) {
+                                    navController.navigate(Screens.AdminDashboardScreen.route)
+                                }
                             }
                         }
                     },

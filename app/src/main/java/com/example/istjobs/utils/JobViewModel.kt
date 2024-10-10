@@ -1,13 +1,14 @@
 package com.example.istjobs.utils
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.istjobs.data.Application
 import com.example.istjobs.data.Job
-import com.example.istjobs.data.UserProfile // Make sure to create this data class
+import com.example.istjobs.data.UserProfile // Ensure you have this data class defined
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.SimpleDateFormat
-import java.util.*
 
 class JobViewModel : ViewModel() {
     // List of jobs and applications to be observed
@@ -41,7 +42,7 @@ class JobViewModel : ViewModel() {
 
     // Function to fetch applications from Firestore
     fun fetchApplications() {
-        db.collection("applications").get()
+        db.collection("applied").get() // Ensure you are fetching from the 'applied' collection
             .addOnSuccessListener { documents ->
                 _applications.clear()
                 for (document in documents) {
@@ -51,21 +52,6 @@ class JobViewModel : ViewModel() {
             }
             .addOnFailureListener { e -> e.printStackTrace() }
     }
-
-    // Function to fetch user profile data
-    fun fetchUserProfile(userId: String, callback: (UserProfile?) -> Unit) {
-        db.collection("userProfiles").document(userId).get()
-            .addOnSuccessListener { document ->
-                val userProfile = document?.toObject(UserProfile::class.java)
-                callback(userProfile)
-            }
-            .addOnFailureListener { e ->
-                e.printStackTrace()
-                callback(null)
-            }
-    }
-
-    // Function to add an application to Firestore
     fun addApplication(
         userId: String,
         name: String,
@@ -84,26 +70,47 @@ class JobViewModel : ViewModel() {
             phoneNumber = phoneNumber,
             qualifications = qualifications,
             experience = experience,
-            jobId = jobId,
-            status = "pending" // Initial status
+            status = "pending", // Initial status
+            date = System.currentTimeMillis().toString() // Store the current date as a timestamp, you can format it as needed
         )
 
-        db.collection("applications")
+
+        // Log the application data for debugging
+        println("Adding application: $application")
+
+        // Add the application to the 'applied' collection
+        db.collection("applied")
             .add(application)
             .addOnSuccessListener { documentReference ->
                 println("Application submitted with ID: ${documentReference.id}")
                 _applications.add(application) // Optionally add to local state
             }
             .addOnFailureListener { e ->
-                println("Error adding application: $e")
+                println("Error adding application: ${e.message}") // Log the error message
             }
     }
 
 
-    // Function to get applications for a specific user
-    fun getApplications(userId: String): List<Application> {
-        return _applications.filter { it.userId == userId }
-    }
 
-    // Add other functions as needed (e.g., for jobs)
-}
+
+        fun getApplications(userId: String): LiveData<List<Application>> {
+            val applications = MutableLiveData<List<Application>>()
+
+            db.collection("applied")
+                .whereEqualTo("userId", userId)
+                .get()
+                .addOnSuccessListener { documents ->
+                    val applicationList = documents.map { document ->
+                        val application = document.toObject(Application::class.java)
+                        application.status = document.getString("status") ?: "pending"
+                        application
+                    }
+                    applications.value = applicationList
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("JobViewModel", "Error fetching applications", exception)
+                }
+
+            return applications
+        }
+    }

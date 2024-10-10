@@ -19,8 +19,8 @@ import androidx.navigation.NavHostController
 import com.example.istjobs.R
 import com.example.istjobs.nav.Screens
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun AdminSignupScreen(
@@ -28,12 +28,12 @@ fun AdminSignupScreen(
 ) {
     val auth = remember { FirebaseAuth.getInstance() }
     val db = remember { FirebaseFirestore.getInstance() }
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isSignupSuccessful by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -55,7 +55,7 @@ fun AdminSignupScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Admin Signup",
+                    text = "Admin Sign Up",
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 24.sp
                 )
@@ -74,7 +74,7 @@ fun AdminSignupScreen(
 
                 TextField(
                     value = email,
-                    onValueChange = { email = it.trim() }, // Trim whitespace
+                    onValueChange = { email = it.trim() },
                     label = { Text("Admin Email") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
@@ -116,25 +116,21 @@ fun AdminSignupScreen(
 
                 Button(
                     onClick = {
-                        val trimmedEmail = email.trim()  // Trim any whitespace
-
-                        // Validate email format
+                        val trimmedEmail = email.trim()
                         if (!isEmailValid(trimmedEmail)) {
                             errorMessage = "Please enter a valid email address."
                             return@Button
                         }
 
-                        // Validate password match
                         if (password.isEmpty() || confirmPassword.isEmpty()) {
                             errorMessage = "Please fill in all fields."
                             return@Button
                         }
 
                         if (password == confirmPassword) {
-                            signUp(auth, db, trimmedEmail, password, { user ->
-                                navController.navigate(Screens.AdminLoginScreen.route) {
-                                    popUpTo(Screens.AdminSignupScreen.route) { inclusive = true }
-                                }
+                            signUp(auth, db, trimmedEmail, password, "admin", { user ->
+                                isSignupSuccessful = true
+                                errorMessage = "Sign up successful! Please check your email to verify your account."
                             }, { error ->
                                 errorMessage = error
                             })
@@ -159,7 +155,7 @@ fun AdminSignupScreen(
                 errorMessage?.let {
                     Text(
                         text = it,
-                        color = MaterialTheme.colorScheme.error,
+                        color = if (isSignupSuccessful) Color.Green else MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
@@ -168,41 +164,41 @@ fun AdminSignupScreen(
     }
 }
 
-// Basic email validation function
 private fun isEmailValid(email: String): Boolean {
     return email.isNotBlank() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
 
-// Function to handle admin sign-up and store in Firestore
 private fun signUp(
     auth: FirebaseAuth,
     db: FirebaseFirestore,
     email: String,
     password: String,
+    role: String,
     onSuccess: (FirebaseUser?) -> Unit,
     onFailure: (String) -> Unit
 ) {
     auth.createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val currentUser = auth.currentUser
+                val user = auth.currentUser
+                user?.sendEmailVerification()?.addOnCompleteListener { emailTask ->
+                    if (emailTask.isSuccessful) {
+                        val userData = hashMapOf(
+                            "email" to email,
+                            "role" to role
+                        )
 
-                // Store the newly created admin in Firestore under the "admins" collection
-                currentUser?.let { user ->
-                    val adminData = hashMapOf(
-                        "email" to email,
-                        "uid" to user.uid
-                    )
-
-                    db.collection("admins").document(user.uid)
-                        .set(adminData)
-                        .addOnSuccessListener {
-                            onSuccess(user) // Proceed to the next screen
+                        user.let {
+                            db.collection("users").document(it.uid).set(userData)
+                                .addOnSuccessListener { onSuccess(user) }
+                                .addOnFailureListener { e ->
+                                    onFailure("Failed to add admin data to Firestore: ${e.message}")
+                                }
                         }
-                        .addOnFailureListener { e ->
-                            onFailure("Failed to store admin data: ${e.message}")
-                        }
-                } ?: onFailure("Failed to create the admin user.")
+                    } else {
+                        onFailure("Failed to send verification email: ${emailTask.exception?.message}")
+                    }
+                }
             } else {
                 val errorMessage = task.exception?.message ?: "Sign up failed"
                 if (errorMessage.contains("email address is already in use", ignoreCase = true)) {

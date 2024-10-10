@@ -1,52 +1,77 @@
 package com.example.istjobs.screen
 
-import androidx.compose.foundation.background
+import android.util.Log
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.istjobs.utils.JobViewModel
-import com.google.firebase.auth.FirebaseAuth
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.istjobs.data.Application
-
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 
 @Composable
 fun HistoryScreen(navController: NavHostController) {
-    // Get the JobViewModel instance
-    val jobViewModel: JobViewModel = viewModel()
+    val history = remember { mutableStateListOf<Application>() }
+    var loading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val db = FirebaseFirestore.getInstance()
 
-    // Get userId
-    val auth = FirebaseAuth.getInstance()
-    val userId = auth.currentUser?.uid ?: return
+    // Firestore Listener Registration
+    var listenerRegistration: ListenerRegistration? by remember { mutableStateOf(null) }
 
-    // Fetch applications for the current user
-    val applications = jobViewModel.getApplications(userId)
+    LaunchedEffect(Unit) {
+        // Load history from the user's application history collection
+        listenerRegistration = db.collection("applied") // Change to the actual collection name
+            .addSnapshotListener { snapshot, e ->
+                loading = false
+                if (e != null) {
+                    errorMessage = "Error fetching history: ${e.message}"
+                    return@addSnapshotListener
+                }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Application History",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
+                history.clear() // Clear the existing list before adding new ones
+                if (snapshot != null) {
+                    for (doc in snapshot.documents) {
+                        val application = doc.toObject(Application::class.java)
+                        if (application != null) {
+                            application.id = doc.id // Assign the document ID from Firestore
+                            history.add(application) // Add application to the list
+                            Log.d("HistoryScreen", "Fetched application: $application") // Log fetched application
+                        }
+                    }
+                }
+
+                if (history.isEmpty()) {
+                    errorMessage = "No history found."
+                }
+            }
+    }
+
+    // Cleanup the listener when the composable is disposed
+    DisposableEffect(Unit) {
+        onDispose {
+            listenerRegistration?.remove()
+        }
+    }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Application History", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (applications.isEmpty()) {
-            Text("No application history found.")
+        if (loading) {
+            CircularProgressIndicator()
+        } else if (errorMessage != null) {
+            BasicText(errorMessage ?: "")
+        } else if (history.isEmpty()) {
+            BasicText("No history found.")
         } else {
-            applications.forEach { application ->
-                ApplicationItem(application)
+            history.forEach { application ->
+                HistoryItem(application)
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
@@ -54,7 +79,7 @@ fun HistoryScreen(navController: NavHostController) {
 }
 
 @Composable
-fun ApplicationItem(application: Application) {
+fun HistoryItem(application: Application) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,14 +87,13 @@ fun ApplicationItem(application: Application) {
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Name: ${application.name}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Gender: ${application.gender}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Address: ${application.address}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Phone Number: ${application.phoneNumber}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Qualifications: ${application.qualifications}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Experience: ${application.experience}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Job ID: ${application.jobId}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Status: ${application.status}", style = MaterialTheme.typography.bodyMedium)
+            // Show applicant's details
+            Text(text = "Name: ${application.name ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Status: ${application.status ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
+
+            // You can add more details if necessary
+
+            Text(text = "Date: ${application.date ?: "N/A"}", style = MaterialTheme.typography.bodyMedium) // Assuming you have a date field
         }
     }
 }

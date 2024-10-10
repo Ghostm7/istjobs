@@ -27,12 +27,13 @@ fun UserSignupScreen(
     navController: NavHostController
 ) {
     val auth = remember { FirebaseAuth.getInstance() }
-    val db = remember { FirebaseFirestore.getInstance() } // Initialize Firestore instance
+    val db = remember { FirebaseFirestore.getInstance() }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isSignupSuccessful by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -62,7 +63,7 @@ fun UserSignupScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Image(
-                    painter = painterResource(R.drawable.isticon), // Replace with your app logo if needed
+                    painter = painterResource(R.drawable.isticon),
                     contentDescription = "User Icon",
                     modifier = Modifier
                         .size(100.dp)
@@ -73,7 +74,7 @@ fun UserSignupScreen(
 
                 TextField(
                     value = email,
-                    onValueChange = { email = it.trim() }, // Trim whitespace
+                    onValueChange = { email = it.trim() },
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
@@ -115,17 +116,12 @@ fun UserSignupScreen(
 
                 Button(
                     onClick = {
-                        val trimmedEmail = email.trim()  // Trim any whitespace
-                        println("Email entered: '$trimmedEmail'")  // Log the exact input
-
-                        // Validate email format
+                        val trimmedEmail = email.trim()
                         if (!isEmailValid(trimmedEmail)) {
                             errorMessage = "Please enter a valid email address."
-                            println("Invalid email format")
                             return@Button
                         }
 
-                        // Validate password match
                         if (password.isEmpty() || confirmPassword.isEmpty()) {
                             errorMessage = "Please fill in all fields."
                             return@Button
@@ -133,10 +129,8 @@ fun UserSignupScreen(
 
                         if (password == confirmPassword) {
                             signUp(auth, db, trimmedEmail, password, { user ->
-                                // Navigate to LoginScreen upon successful signup
-                                navController.navigate(Screens.UserLoginScreen.route) {
-                                    popUpTo(Screens.UserSignupScreen.route) { inclusive = true }
-                                }
+                                isSignupSuccessful = true
+                                errorMessage = "Sign up successful! Please check your email to verify your account."
                             }, { error ->
                                 errorMessage = error
                             })
@@ -161,7 +155,7 @@ fun UserSignupScreen(
                 errorMessage?.let {
                     Text(
                         text = it,
-                        color = MaterialTheme.colorScheme.error,
+                        color = if (isSignupSuccessful) Color.Green else MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
@@ -170,12 +164,10 @@ fun UserSignupScreen(
     }
 }
 
-// Basic email validation function
 private fun isEmailValid(email: String): Boolean {
     return email.isNotBlank() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
 
-// Firebase sign-up function that adds user data to Firestore
 private fun signUp(
     auth: FirebaseAuth,
     db: FirebaseFirestore,
@@ -188,22 +180,23 @@ private fun signUp(
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val user = auth.currentUser
-                val userData = hashMapOf(
-                    "email" to email,
-                    "role" to "user" // Define the role of the user (can be "user" or "admin")
-                )
+                user?.sendEmailVerification()?.addOnCompleteListener { emailTask ->
+                    if (emailTask.isSuccessful) {
+                        val userData = hashMapOf(
+                            "email" to email,
+                            "role" to "user" // Define the role
+                        )
 
-                // Add the user data to Firestore
-                user?.let {
-                    db.collection("users")
-                        .document(it.uid) // Use user's UID as document ID
-                        .set(userData)
-                        .addOnSuccessListener {
-                            onSuccess(user) // Firestore data added successfully
+                        user.let {
+                            db.collection("users").document(it.uid).set(userData)
+                                .addOnSuccessListener { onSuccess(user) }
+                                .addOnFailureListener { e ->
+                                    onFailure("Failed to add user data to Firestore: ${e.message}")
+                                }
                         }
-                        .addOnFailureListener { e ->
-                            onFailure("Failed to add user data to Firestore: ${e.message}")
-                        }
+                    } else {
+                        onFailure("Failed to send verification email: ${emailTask.exception?.message}")
+                    }
                 }
             } else {
                 val errorMessage = task.exception?.message ?: "Sign up failed"

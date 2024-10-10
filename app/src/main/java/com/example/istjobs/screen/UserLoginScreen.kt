@@ -121,8 +121,10 @@ fun UserLoginScreen(
                 Button(
                     onClick = {
                         coroutineScope.launch {
-                            sharedViewModel.signIn(email, password) {
-                                navController.navigate(Screens.UserProfileScreen.route) // Navigate to UserDashboardScreen
+                            sharedViewModel.signIn(email, password, "user") { isSuccess ->
+                                if (isSuccess) {
+                                    navController.navigate(Screens.UserProfileScreen.route) // Navigate to UserDashboardScreen
+                                }
                             }
                         }
                     },

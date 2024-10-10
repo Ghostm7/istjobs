@@ -2,7 +2,6 @@ package com.example.istjobs.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,13 +13,14 @@ import com.example.istjobs.nav.Screens
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+@OptIn(ExperimentalMaterial3Api::class) // Opt-in annotation for experimental APIs
 @Composable
 fun UserProfileScreen(navController: NavHostController) {
     val db = remember { FirebaseFirestore.getInstance() }
     val auth = remember { FirebaseAuth.getInstance() }
     val currentUser = auth.currentUser
 
-    // If no user is logged in, navigate back to login screen (for safety)
+    // If no user is logged in, navigate back to login screen
     if (currentUser == null) {
         navController.navigate(Screens.UserLoginScreen.route) {
             popUpTo(Screens.UserProfileScreen.route) { inclusive = true }
@@ -28,9 +28,9 @@ fun UserProfileScreen(navController: NavHostController) {
         return
     }
 
-    // Replace "user_id_placeholder" with actual user ID from authentication
     val userId = currentUser.uid
 
+    // State variables
     var name by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
@@ -42,10 +42,9 @@ fun UserProfileScreen(navController: NavHostController) {
 
     // Load user profile data when the screen is first displayed
     LaunchedEffect(Unit) {
-        db.collection("userProfiles").document(userId).get() // Changed to "userProfiles"
+        db.collection("userProfiles").document(userId).get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
-                    // If the document exists, retrieve the data
                     name = document.getString("name") ?: ""
                     gender = document.getString("gender") ?: ""
                     address = document.getString("address") ?: ""
@@ -54,7 +53,7 @@ fun UserProfileScreen(navController: NavHostController) {
                     experience = document.getString("experience") ?: ""
                     loading = false
 
-                    // If user data is present, navigate to dashboard
+                    // Navigate to dashboard if profile is complete
                     if (name.isNotEmpty() && gender.isNotEmpty() && address.isNotEmpty() &&
                         phoneNumber.isNotEmpty() && qualification.isNotEmpty() &&
                         experience.isNotEmpty()) {
@@ -63,13 +62,11 @@ fun UserProfileScreen(navController: NavHostController) {
                         }
                     }
                 } else {
-                    // Document does not exist, it's a new user
                     isNewUser = true
                     loading = false
                 }
             }
             .addOnFailureListener {
-                // Handle error (e.g., show a message)
                 loading = false
             }
     }
@@ -78,7 +75,7 @@ fun UserProfileScreen(navController: NavHostController) {
     if (loading) {
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center // Align the indicator to the center
+            contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator()
         }
@@ -101,112 +98,18 @@ fun UserProfileScreen(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Name Input
-                BasicTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
-                        .padding(16.dp),
-                    decorationBox = { innerTextField ->
-                        if (name.isEmpty()) {
-                            Text("Enter your name", color = Color.Gray)
-                        }
-                        innerTextField()
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Gender Input
-                BasicTextField(
-                    value = gender,
-                    onValueChange = { gender = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
-                        .padding(16.dp),
-                    decorationBox = { innerTextField ->
-                        if (gender.isEmpty()) {
-                            Text("Enter your gender", color = Color.Gray)
-                        }
-                        innerTextField()
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Address Input
-                BasicTextField(
-                    value = address,
-                    onValueChange = { address = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
-                        .padding(16.dp),
-                    decorationBox = { innerTextField ->
-                        if (address.isEmpty()) {
-                            Text("Enter your address", color = Color.Gray)
-                        }
-                        innerTextField()
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Phone Number Input
-                BasicTextField(
-                    value = phoneNumber,
-                    onValueChange = { phoneNumber = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
-                        .padding(16.dp),
-                    decorationBox = { innerTextField ->
-                        if (phoneNumber.isEmpty()) {
-                            Text("Enter your phone number", color = Color.Gray)
-                        }
-                        innerTextField()
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Qualification Input
-                BasicTextField(
-                    value = qualification,
-                    onValueChange = { qualification = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
-                        .padding(16.dp),
-                    decorationBox = { innerTextField ->
-                        if (qualification.isEmpty()) {
-                            Text("Enter your qualification", color = Color.Gray)
-                        }
-                        innerTextField()
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Experience Input
-                BasicTextField(
-                    value = experience,
-                    onValueChange = { experience = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
-                        .padding(16.dp),
-                    decorationBox = { innerTextField ->
-                        if (experience.isEmpty()) {
-                            Text("Enter your experience", color = Color.Gray)
-                        }
-                        innerTextField()
-                    }
-                )
-
+                // Input Fields
+                TextField(value = name, onValueChange = { name = it }, label = { Text("Name") })
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(value = gender, onValueChange = { gender = it }, label = { Text("Gender") })
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(value = address, onValueChange = { address = it }, label = { Text("Address") })
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(value = phoneNumber, onValueChange = { phoneNumber = it }, label = { Text("Phone Number") })
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(value = qualification, onValueChange = { qualification = it }, label = { Text("Qualification") })
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(value = experience, onValueChange = { experience = it }, label = { Text("Experience") })
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Save Button
@@ -222,11 +125,10 @@ fun UserProfileScreen(navController: NavHostController) {
                     )
 
                     // Save user profile data to Firestore under "userProfiles"
-                    db.collection("userProfiles").document(userId) // Changed to "userProfiles"
+                    db.collection("userProfiles").document(userId)
                         .set(userData)
                         .addOnSuccessListener {
                             navController.navigate(Screens.UserDashboardScreen.route) {
-                                // Clear the back stack if needed
                                 popUpTo(Screens.UserProfileScreen.route) { inclusive = true }
                             }
                         }

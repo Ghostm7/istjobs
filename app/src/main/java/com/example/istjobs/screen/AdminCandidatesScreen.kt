@@ -1,5 +1,6 @@
 package com.example.istjobs.screen
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.*
@@ -14,8 +15,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
 @Composable
+
 fun AdminCandidatesScreen(navController: NavHostController, jobViewModel: JobViewModel) {
-    val applications = remember { mutableStateListOf<Application>() }
+    val applied = remember { mutableStateListOf<Application>() } // Changed from applications to applied
     var loading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val db = FirebaseFirestore.getInstance()
@@ -24,26 +26,27 @@ fun AdminCandidatesScreen(navController: NavHostController, jobViewModel: JobVie
     var listenerRegistration: ListenerRegistration? by remember { mutableStateOf(null) }
 
     LaunchedEffect(Unit) {
-        // Load applications from Firestore
-        listenerRegistration = db.collection("applications").addSnapshotListener { snapshot, e ->
+        // Load applications from the new applied collection
+        listenerRegistration = db.collection("applied").addSnapshotListener { snapshot, e -> // Changed from "applications" to "applied"
             loading = false
             if (e != null) {
                 errorMessage = "Error fetching applications: ${e.message}"
                 return@addSnapshotListener
             }
 
-            applications.clear() // Clear the existing list before adding new ones
+            applied.clear() // Clear the existing list before adding new ones
             if (snapshot != null) {
                 for (doc in snapshot.documents) {
                     val application = doc.toObject(Application::class.java)
                     if (application != null) {
                         application.id = doc.id // Assign the document ID from Firestore
-                        applications.add(application) // Add application to the list
+                        applied.add(application) // Add application to the list
+                        Log.d("AdminCandidatesScreen", "Fetched application: $application") // Log fetched application
                     }
                 }
             }
 
-            if (applications.isEmpty()) {
+            if (applied.isEmpty()) {
                 errorMessage = "No applications found."
             }
         }
@@ -65,13 +68,13 @@ fun AdminCandidatesScreen(navController: NavHostController, jobViewModel: JobVie
             CircularProgressIndicator()
         } else if (errorMessage != null) {
             BasicText(errorMessage ?: "")
-        } else if (applications.isEmpty()) {
+        } else if (applied.isEmpty()) {
             BasicText("No applications found.")
         } else {
-            applications.forEach { application ->
+            applied.forEach { application ->
                 CandidateItem(application) { status ->
                     // Update application status in Firestore
-                    db.collection("applications").document(application.id)
+                    db.collection("applied").document(application.id) // Changed from "applications" to "applied"
                         .update("status", status)
                         .addOnSuccessListener {
                             println("Successfully updated status for document ID: ${application.id}")
@@ -86,6 +89,7 @@ fun AdminCandidatesScreen(navController: NavHostController, jobViewModel: JobVie
     }
 }
 
+
 @Composable
 fun CandidateItem(application: Application, onStatusChange: (String) -> Unit) {
     Card(
@@ -96,14 +100,14 @@ fun CandidateItem(application: Application, onStatusChange: (String) -> Unit) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Show applicant's details
-            Text(text = "Name: ${application.name}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Gender: ${application.gender}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Address: ${application.address}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Phone Number: ${application.phoneNumber}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Qualifications: ${application.qualifications}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Experience: ${application.experience}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Job ID: ${application.jobId}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Status: ${application.status}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Name: ${application.name ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Gender: ${application.gender ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Address: ${application.address ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Phone Number: ${application.phoneNumber ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Qualifications: ${application.qualifications ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Experience: ${application.experience ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
+
+            Text(text = "Status: ${application.status ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
