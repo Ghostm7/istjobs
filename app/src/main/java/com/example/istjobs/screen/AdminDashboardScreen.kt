@@ -79,8 +79,9 @@ fun AdminDashboardScreen(navController: NavHostController) {
                     DashboardItem(
                         imageRes = R.drawable.profile,
                         label = "Profile",
-                        onClick = { navController.navigate(Screens.ProfileScreen.route) }
+                        onClick = { navController.navigate(Screens.AdminProfileScreen.route) }
                     )
+
                     DashboardItem(
                         imageRes = R.drawable.logout,
                         label = "Logout",

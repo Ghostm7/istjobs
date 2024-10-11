@@ -13,7 +13,9 @@ sealed class Screens(val route: String) {
     object AddDataScreen : Screens(route = "add_data_screen") // Add Data Screen route
     object GetDataScreen : Screens(route = "get_data_screen") // Get Data Screen route
     object ProfileScreen : Screens(route = "profile_screen") // Profile Screen route
+    object AdminProfileScreen : Screens(route = "admin_profile") // Profile Screen route
     object UserProfileScreen : Screens(route = "user_profile_screen")
+    object AdminFormScreen : Screens(route = "admin_form")
     object ForgotPasswordScreen : Screens(route = "forgot_password_screen") // Forgot Password Screen route
     object SettingsScreen : Screens(route = "settings_screen") // Settings Screen route
     object SearchJobsScreen : Screens(route = "search_jobs_screen") // New route for Search Jobs screen

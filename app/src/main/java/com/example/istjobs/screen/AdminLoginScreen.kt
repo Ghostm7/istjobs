@@ -29,7 +29,7 @@ fun AdminLoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) } // MutableState for password visibility
 
     // Observe the authentication error as state
     val authError by sharedViewModel.authError.collectAsState(initial = null)
@@ -98,8 +98,8 @@ fun AdminLoginScreen(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
-                        checked = passwordVisible,
-                        onCheckedChange = { passwordVisible = it }
+                        checked = passwordVisible, // Correctly use the value here
+                        onCheckedChange = { passwordVisible = it }  // Update the state correctly
                     )
                     Text(
                         text = if (passwordVisible) "Hide Password" else "Show Password"
@@ -118,12 +118,19 @@ fun AdminLoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+
                 Button(
                     onClick = {
                         coroutineScope.launch {
                             sharedViewModel.signIn(email, password, "admin") { isSuccess ->
                                 if (isSuccess) {
-                                    navController.navigate(Screens.AdminDashboardScreen.route)
+                                    sharedViewModel.checkAdminProfile { hasProfile ->
+                                        if (hasProfile) {
+                                            navController.navigate(Screens.AdminDashboardScreen.route) // Redirect to dashboard
+                                        } else {
+                                            navController.navigate(Screens.AdminFormScreen.route) // Redirect to profile setup
+                                        }
+                                    }
                                 }
                             }
                         }

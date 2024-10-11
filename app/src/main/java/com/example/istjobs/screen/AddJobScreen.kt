@@ -10,8 +10,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.istjobs.data.Job
-import com.example.istjobs.utils.JobViewModel
 import com.example.istjobs.nav.Screens
+import com.example.istjobs.utils.JobViewModel
+
 import java.util.*
 
 @Composable

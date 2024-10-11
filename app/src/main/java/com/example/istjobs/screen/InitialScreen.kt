@@ -57,7 +57,7 @@ fun InitialScreen(navController: NavHostController) {
                 ) {
                     // User Icon
                     Image(
-                        painter = painterResource(id = R.drawable.usericon), // Replace with your drawable resource
+                        painter = painterResource(id = R.drawable.user2), // Replace with your drawable resource
                         contentDescription = "User  Icon",
                         modifier = Modifier.size(100.dp) // Adjust size as needed
                     )
@@ -101,7 +101,7 @@ fun InitialScreen(navController: NavHostController) {
                 ) {
                     // Admin Icon
                     Image(
-                        painter = painterResource(id = R.drawable.adminiconn), // Replace with your drawable resource
+                        painter = painterResource(id = R.drawable.admin2), // Replace with your drawable resource
                         contentDescription = "Admin Icon",
                         modifier = Modifier.size(100.dp) // Adjust size as needed
                     )

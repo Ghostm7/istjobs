@@ -198,4 +198,3 @@ fun CandidateItem(application: Application, onStatusChange: (String) -> Unit, on
         }
     }
 }
-

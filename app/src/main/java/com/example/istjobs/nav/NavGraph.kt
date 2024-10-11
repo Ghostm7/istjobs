@@ -87,10 +87,18 @@ fun NavGraph(
         composable(route = Screens.UserProfileScreen.route) {
             UserProfileScreen(navController)
         }
+        composable(route = Screens.AdminFormScreen.route) {
+            AdminFormScreen(navController)
+        }
 
         // Add ProfileScreen route
         composable(route = Screens.ProfileScreen.route) {
             ProfileScreen(navController)
+        }
+
+        // Add AdminProfileScreen route
+        composable(route = Screens.AdminProfileScreen.route) {
+            AdminProfileScreen(navController)
         }
 
         composable(route = Screens.ApplicationConfirmationScreen.route) {
