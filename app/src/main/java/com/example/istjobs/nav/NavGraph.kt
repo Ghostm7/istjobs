@@ -4,11 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.istjobs.screen.*
+import com.example.istjobs.screen.* // Import all your screens
 import com.example.istjobs.utils.JobViewModel // Import JobViewModel
 import com.example.istjobs.utils.SharedViewModel // Import SharedViewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.istjobs.utils.JobViewModel.AuthenticationUtil.getCurrentUserId
 
 @Composable
 fun NavGraph(
@@ -67,8 +68,14 @@ fun NavGraph(
                 jobViewModel = jobViewModel
             )
         }
+        composable(route = Screens.JobListScreen.route) {
+            JobListScreen(navController = navController, jobViewModel = jobViewModel)
+        }
 
-        // Add this line to include AddJobScreen
+
+
+
+        // Add AddJobScreen route
         composable(route = Screens.AddJobScreen.route) {
             AddJobScreen(navController = navController, jobViewModel = jobViewModel)
         }
@@ -77,7 +84,7 @@ fun NavGraph(
             SearchJobsScreen(navController = navController, jobViewModel = jobViewModel)
         }
 
-        composable(Screens.UserProfileScreen.route) {
+        composable(route = Screens.UserProfileScreen.route) {
             UserProfileScreen(navController)
         }
 
@@ -85,15 +92,15 @@ fun NavGraph(
         composable(route = Screens.ProfileScreen.route) {
             ProfileScreen(navController)
         }
+
         composable(route = Screens.ApplicationConfirmationScreen.route) {
             ApplicationConfirmationScreen(navController = navController)
         }
 
         // Add HistoryScreen route
         composable(route = Screens.HistoryScreen.route) {
-            HistoryScreen(navController = navController)
+            HistoryScreen(navController = navController, currentUserId = getCurrentUserId())
         }
-
 
         // Add AdminCandidatesScreen route
         composable(route = Screens.AdminCandidatesScreen.route) {
@@ -111,9 +118,5 @@ fun NavGraph(
                 JobDetailScreen(jobId = jobId, jobViewModel = jobViewModel, navController = navController)
             }
         }
-
-
-
-
     }
 }

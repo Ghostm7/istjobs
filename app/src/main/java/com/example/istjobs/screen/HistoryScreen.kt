@@ -10,11 +10,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.istjobs.data.Application
+import com.example.istjobs.nav.Screens
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
 @Composable
-fun HistoryScreen(navController: NavHostController) {
+fun HistoryScreen(navController: NavHostController, currentUserId: String) {
     val history = remember { mutableStateListOf<Application>() }
     var loading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -26,6 +27,7 @@ fun HistoryScreen(navController: NavHostController) {
     LaunchedEffect(Unit) {
         // Load history from the user's application history collection
         listenerRegistration = db.collection("applied") // Change to the actual collection name
+            .whereEqualTo("userId", currentUserId) // Add a where clause to filter by user ID
             .addSnapshotListener { snapshot, e ->
                 loading = false
                 if (e != null) {
@@ -63,6 +65,21 @@ fun HistoryScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Go Back Button
+        Button(
+            onClick = {
+                navController.navigate(Screens.UserDashboardScreen.route) {
+                    popUpTo(Screens.UserDashboardScreen.route) { inclusive = true }
+                }
+            },
+            modifier = Modifier
+                .padding(8.dp) // Reduce padding around the button
+        ) {
+            Text("Go Back")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         if (loading) {
             CircularProgressIndicator()
         } else if (errorMessage != null) {
@@ -87,13 +104,10 @@ fun HistoryItem(application: Application) {
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Show applicant's details
             Text(text = "Name: ${application.name ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Job Applied For: ${application.jobName ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Date Applied: ${application.dateApplied ?: "N/A"}", style = MaterialTheme.typography.bodyMedium) // Display date applied
             Text(text = "Status: ${application.status ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
-
-            // You can add more details if necessary
-
-            Text(text = "Date: ${application.date ?: "N/A"}", style = MaterialTheme.typography.bodyMedium) // Assuming you have a date field
         }
     }
 }

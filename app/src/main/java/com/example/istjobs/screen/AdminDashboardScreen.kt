@@ -30,7 +30,7 @@ fun AdminDashboardScreen(navController: NavHostController) {
                 .padding(16.dp)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.Center // Set vertical arrangement to center
         ) {
             // IST Logo on top
             Image(
@@ -50,59 +50,69 @@ fun AdminDashboardScreen(navController: NavHostController) {
             )
 
             // Create a grid layout for dashboard items
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                DashboardItem(
-                    imageRes = R.drawable.jobsicon,
-                    label = "Jobs",
-                    onClick = { navController.navigate(Screens.AddJobScreen.route) }
-                )
-                DashboardItem(
-                    imageRes = R.drawable.candidatesicon,
-                    label = "Candidates",
-                    onClick = { navController.navigate(Screens.AdminCandidatesScreen.route) }
-                )
-            }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    DashboardItem(
+                        imageRes = R.drawable.jobsicon,
+                        label = "Jobs",
+                        onClick = { navController.navigate(Screens.JobListScreen.route) }
+                    )
+                    DashboardItem(
+                        imageRes = R.drawable.candidatesicon,
+                        label = "Candidates",
+                        onClick = { navController.navigate(Screens.AdminCandidatesScreen.route) }
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                DashboardItem(
-                    imageRes = R.drawable.profile,
-                    label = "Profile",
-                    onClick = { navController.navigate(Screens.ProfileScreen.route) }
-                )
-                DashboardItem(
-                    imageRes = R.drawable.logout,
-                    label = "Logout",
-                    onClick = { navController.navigate(Screens.InitialScreen.route) }
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    DashboardItem(
+                        imageRes = R.drawable.profile,
+                        label = "Profile",
+                        onClick = { navController.navigate(Screens.ProfileScreen.route) }
+                    )
+                    DashboardItem(
+                        imageRes = R.drawable.logout,
+                        label = "Logout",
+                        onClick = { navController.navigate(Screens.InitialScreen.route) }
+                    )
+                }
             }
         }
     }
 }
-
 @Composable
 fun DashboardItem(imageRes: Int, label: String, onClick: () -> Unit) {
-    Column(
+    Card(
         modifier = Modifier
             .width(120.dp)
             .padding(8.dp)
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White) // Set the background color here
     ) {
-        Image(
-            painter = painterResource(imageRes),
-            contentDescription = label,
-            modifier = Modifier.size(80.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
+        Column(
+            modifier = Modifier
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(imageRes),
+                contentDescription = label,
+                modifier = Modifier.size(80.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = label, style = MaterialTheme.typography.bodyMedium, color = Color.Black) // Set label color to black
+        }
     }
 }

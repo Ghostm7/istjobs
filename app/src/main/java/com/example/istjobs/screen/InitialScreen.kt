@@ -42,66 +42,91 @@ fun InitialScreen(navController: NavHostController) {
             )
             Spacer(modifier = Modifier.height(20.dp))
 
-            // User Icon
-            Image(
-                painter = painterResource(id = R.drawable.usericon), // Replace with your drawable resource
-                contentDescription = "User Icon",
-                modifier = Modifier.size(100.dp) // Adjust size as needed
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // User Button
-            Button(
-                onClick = {
-                    navController.navigate(Screens.UserSignupScreen.route) // Navigate to SignupScreen
-                },
+            // User Card
+            Card(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .width(150.dp) // Button width
-                    .height(40.dp), // Button height
-                shape = RoundedCornerShape(8.dp)
+                    .width(200.dp)
+                    .padding(8.dp),
+                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                Text(
-                    text = "User",
-                    fontSize = 16.sp, // Smaller font size
-                    color = Color.White // Button text color
-                )
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // User Icon
+                    Image(
+                        painter = painterResource(id = R.drawable.usericon), // Replace with your drawable resource
+                        contentDescription = "User  Icon",
+                        modifier = Modifier.size(100.dp) // Adjust size as needed
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // User Button
+                    Button(
+                        onClick = {
+                            navController.navigate(Screens.UserSignupScreen.route) // Navigate to SignupScreen
+                        },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .width(150.dp) // Button width
+                            .height(40.dp), // Button height
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "User ",
+                            fontSize = 16.sp, // Smaller font size
+                            color = Color.White // Button text color
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Admin Icon
-            Image(
-                painter = painterResource(id = R.drawable.adminiconn), // Replace with your drawable resource
-                contentDescription = "Admin Icon",
-                modifier = Modifier.size(100.dp) // Adjust size as needed
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Admin Button
-            Button(
-                onClick = {
-                    navController.navigate(Screens.AdminSignupScreen.route) // Navigate to Admin Signup Screen
-                },
+            // Admin Card
+            Card(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .width(150.dp) // Button width
-                    .height(40.dp), // Button height
-                shape = RoundedCornerShape(8.dp)
+                    .width(200.dp)
+                    .padding(8.dp),
+                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                Text(
-                    text = "Admin",
-                    fontSize = 16.sp, // Smaller font size
-                    color = Color.White // Button text color
-                )
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Admin Icon
+                    Image(
+                        painter = painterResource(id = R.drawable.adminiconn), // Replace with your drawable resource
+                        contentDescription = "Admin Icon",
+                        modifier = Modifier.size(100.dp) // Adjust size as needed
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Admin Button
+                    Button(
+                        onClick = {
+                            navController.navigate(Screens.AdminSignupScreen.route) // Navigate to Admin Signup Screen
+                        },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .width(150.dp) // Button width
+                            .height(40.dp), // Button height
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Admin",
+                            fontSize = 16.sp, // Smaller font size
+                            color = Color.White // Button text color
+                        )
+                    }
+                }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-
-
         }
     }
 }

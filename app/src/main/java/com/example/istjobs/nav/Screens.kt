@@ -24,13 +24,19 @@ sealed class Screens(val route: String) {
 
 
 
+
     // New AdminCandidatesScreen route
     object AdminCandidatesScreen : Screens(route = "admin_candidates")
+
+
 
     // New JobDetailScreen route
     object JobDetailScreen : Screens(route = "job_detail/{jobId}") {
         fun createRoute(jobId: String) = "job_detail/$jobId"
     }
+
+    // New JobListScreen route
+    object JobListScreen : Screens(route = "job_list_screen") // Add this line
 
 
 }
