@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,17 +40,31 @@ fun SearchJobsScreen(navController: NavHostController, jobViewModel: JobViewMode
         Column(
             modifier = Modifier
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.Start // Align items to the start (left side)
         ) {
-            GoBackButton(navController)
+            // Go Back Icon at the top left
+            IconButton(onClick = {
+                navController.navigate(Screens.UserDashboardScreen.route) {
+                    popUpTo(Screens.UserDashboardScreen.route) { inclusive = true }
+                }
+            }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack, // Use the left arrow icon
+                    contentDescription = "Go Back",
+                    tint = Color(0xFF6c5ce7) // Set the icon color to purple
+                )
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp)) // Space between arrow and title
 
-            Text(
-                text = "Search Jobs",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
+            // Centered "Search Jobs" Title
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "Search Jobs",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -75,6 +91,11 @@ fun SearchJobsScreen(navController: NavHostController, jobViewModel: JobViewMode
         }
     }
 }
+
+
+
+
+
 
 @Composable
 fun GoBackButton(navController: NavHostController) {

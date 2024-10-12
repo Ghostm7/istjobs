@@ -59,7 +59,7 @@ fun AdminDashboardScreen(navController: NavHostController) {
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     DashboardItem(
-                        imageRes = R.drawable.jobsicon,
+                        imageRes = R.drawable.addjobs,
                         label = "Jobs",
                         onClick = { navController.navigate(Screens.JobListScreen.route) }
                     )

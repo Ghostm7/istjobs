@@ -11,6 +11,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.example.istjobs.nav.NavGraph
 import com.example.istjobs.screen.UserLoginScreen
@@ -24,6 +25,9 @@ class MainActivity : ComponentActivity() {
     private val jobViewModel: JobViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Install splash screen
+        val splashScreen = installSplashScreen()
+
         super.onCreate(savedInstanceState)
 
         // Enable edge-to-edge display support

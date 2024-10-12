@@ -1,6 +1,7 @@
 package com.example.istjobs.utils
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -21,20 +22,36 @@ class SharedViewModel : ViewModel() {
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
     private val firestore: FirebaseFirestore = Firebase.firestore
 
-    var isFirstLogin = mutableStateOf(true) // Changed to a regular mutableState variable
+    var isFirstLogin = mutableStateOf(true) // Indicates if this is the first login
     private val _authError = MutableStateFlow<String?>(null)
     val authError: StateFlow<String?> get() = _authError
 
+    // Current Admin ID
+    private val _currentAdminId = MutableStateFlow<String?>(null)
+    val currentAdminId: StateFlow<String?> = _currentAdminId.asStateFlow()
 
+    // Example of an authError StateFlow
+    private val db = FirebaseFirestore.getInstance()
+
+    // Email validation function
+    private fun isValidEmail(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    // Helper function to display Toast messages
+    private fun showToast(context: Context, message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    // Check if the admin profile exists in Firestore
     fun checkAdminProfile(callback: (Boolean) -> Unit) {
-        val adminId = FirebaseAuth.getInstance().currentUser?.uid
+        val adminId = firebaseAuth.currentUser?.uid
         if (adminId != null) {
             firestore.collection("adminProfiles").document(adminId).get()
-                .addOnSuccessListener { document: com.google.firebase.firestore.DocumentSnapshot ->
+                .addOnSuccessListener { document ->
                     callback(document.exists())
                 }
-                .addOnFailureListener { e: java.lang.Exception ->
-                    // Handle error (e.g., show a message)
+                .addOnFailureListener {
                     callback(false)
                 }
         } else {
@@ -42,36 +59,45 @@ class SharedViewModel : ViewModel() {
         }
     }
 
-    // Current Admin ID
-    private val _currentAdminId = MutableStateFlow<String?>(null)
-    val currentAdminId: StateFlow<String?> = _currentAdminId.asStateFlow()
+    // Check if a user profile exists in Firestore
+    fun checkUserProfile(onResult: (Boolean) -> Unit) {
+        val userId = firebaseAuth.currentUser?.uid
+        if (userId == null) {
+            onResult(false) // No user is logged in
+            return
+        }
 
-    // Email validation function
-    private fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        db.collection("userProfiles").document(userId).get()
+            .addOnSuccessListener { document ->
+                onResult(document.exists()) // Return true if the document exists
+            }
+            .addOnFailureListener { exception ->
+                Log.e("SharedViewModel", "Error checking user profile", exception)
+                onResult(false) // Return false on failure
+            }
     }
 
-    // Helper function to validate signup fields
+    // Validate signup fields
     private fun validateSignup(email: String, password: String, confirmPassword: String, context: Context): Boolean {
         if (email.isBlank() || password.isBlank()) {
-            Toast.makeText(context, "Email and Password cannot be empty", Toast.LENGTH_SHORT).show()
+            showToast(context, "Email and Password cannot be empty")
             return false
         }
 
         if (!isValidEmail(email)) {
-            Toast.makeText(context, "Invalid email format", Toast.LENGTH_SHORT).show()
+            showToast(context, "Invalid email format")
             return false
         }
 
         if (password != confirmPassword) {
-            Toast.makeText(context, "Passwords do not match!", Toast.LENGTH_SHORT).show()
+            showToast(context, "Passwords do not match!")
             return false
         }
 
         return true
     }
 
-    // Sign-up method for admins with profile creation
+    // Admin signup with profile creation
     fun adminSignup(email: String, password: String, confirmPassword: String, name: String, context: Context, onComplete: (Boolean) -> Unit) {
         if (!validateSignup(email, password, confirmPassword, context)) return
 
@@ -80,7 +106,7 @@ class SharedViewModel : ViewModel() {
                 val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
                 val adminId = authResult.user?.uid ?: return@launch
 
-                // Create admin document in Firestore with "admin" role
+                // Create admin document in Firestore
                 val adminData = hashMapOf(
                     "email" to email,
                     "role" to "admin",
@@ -88,7 +114,7 @@ class SharedViewModel : ViewModel() {
                 )
                 firestore.collection("users").document(adminId).set(adminData).await()
 
-                // Save admin profile to "adminProfiles" collection
+                // Save admin profile
                 val adminProfile = AdminProfile(
                     adminId = adminId,
                     name = name,
@@ -96,16 +122,16 @@ class SharedViewModel : ViewModel() {
                 )
                 firestore.collection("adminProfiles").document(adminId).set(adminProfile).await()
 
-                Toast.makeText(context, "Admin signup and profile creation successful", Toast.LENGTH_SHORT).show()
+                showToast(context, "Admin signup and profile creation successful")
                 onComplete(true)
             } catch (e: Exception) {
-                Toast.makeText(context, e.message ?: "Signup failed", Toast.LENGTH_SHORT).show()
+                showToast(context, e.message ?: "Signup failed")
                 onComplete(false)
             }
         }
     }
 
-    // Method to update admin profile
+    // Update admin profile method
     fun updateAdminProfile(adminId: String, updatedProfile: AdminProfile, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
@@ -117,7 +143,7 @@ class SharedViewModel : ViewModel() {
         }
     }
 
-    // Sign-in method for role-based authentication
+    // Sign-in method with role-based authentication
     suspend fun signIn(email: String, password: String, role: String, onResult: (Boolean) -> Unit) {
         if (email.isBlank() || password.isBlank()) {
             _authError.value = "Email and Password cannot be empty"
@@ -136,21 +162,19 @@ class SharedViewModel : ViewModel() {
                 val userAuthResult = firebaseAuth.signInWithEmailAndPassword(email, password).await()
                 val userId = userAuthResult.user?.uid ?: return@launch
 
-                // Check if the logged-in user matches the expected role
+                // Check user role
                 val userDocument = firestore.collection("users").document(userId).get().await()
                 val userRole = userDocument.getString("role") ?: ""
 
                 if (userRole == role) {
                     _authError.value = null // Clear any previous error
-
-                    // Store the current admin ID
-                    _currentAdminId.value = userId // Store the admin ID after successful login
+                    _currentAdminId.value = userId // Store the admin ID
 
                     // Check if the admin profile exists
                     val adminProfileDocument = firestore.collection("adminProfiles").document(userId).get().await()
-                    isFirstLogin.value = !adminProfileDocument.exists() // Set true if profile does not exist
+                    isFirstLogin.value = !adminProfileDocument.exists() // Update first login status
 
-                    onResult(true) // Successful login for the correct role
+                    onResult(true) // Successful login
                 } else {
                     _authError.value = "Unauthorized login attempt for $role role"
                     firebaseAuth.signOut() // Log out if the role doesn't match
@@ -163,21 +187,21 @@ class SharedViewModel : ViewModel() {
         }
     }
 
-    // Sign-up method for users (Role: "user")
+    // User signup method
     fun userSignup(email: String, password: String, confirmPassword: String, context: Context) {
         viewModelScope.launch {
             if (email.isBlank() || password.isBlank()) {
-                Toast.makeText(context, "Email and Password cannot be empty", Toast.LENGTH_SHORT).show()
+                showToast(context, "Email and Password cannot be empty")
                 return@launch
             }
 
             if (!isValidEmail(email)) {
-                Toast.makeText(context, "Invalid email format", Toast.LENGTH_SHORT).show()
+                showToast(context, "Invalid email format")
                 return@launch
             }
 
             if (password != confirmPassword) {
-                Toast.makeText(context, "Passwords do not match!", Toast.LENGTH_SHORT).show()
+                showToast(context, "Passwords do not match!")
                 return@launch
             }
 
@@ -185,24 +209,16 @@ class SharedViewModel : ViewModel() {
                 val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
                 val userId = authResult.user?.uid ?: return@launch
 
-                // Create user document with "user" role
+                // Create user document
                 val userData = hashMapOf(
                     "email" to email,
                     "role" to "user",
                     "userID" to userId
                 )
                 firestore.collection("users").document(userId).set(userData).await()
-                Toast.makeText(context, "User signup successful", Toast.LENGTH_SHORT).show()
+                showToast(context, "User signup successful")
             } catch (e: Exception) {
-                Toast.makeText(context, e.message ?: "Signup failed", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    fun adminLogin(email: String, password: String, onSuccess: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            signIn(email, password, "admin") { isSuccess ->
-                onSuccess(isSuccess)
+                showToast(context, e.message ?: "Signup failed")
             }
         }
     }
@@ -220,10 +236,10 @@ class SharedViewModel : ViewModel() {
         return try {
             val document = firestore.collection("users").document(userID).get().await()
             document.toObject(UserData::class.java)?.also {
-                Toast.makeText(context, "Data retrieved successfully", Toast.LENGTH_SHORT).show()
+                showToast(context, "Data retrieved successfully")
             }
         } catch (exception: Exception) {
-            Toast.makeText(context, "Error retrieving data: ${exception.message}", Toast.LENGTH_SHORT).show()
+            showToast(context, "Error retrieving data: ${exception.message}")
             null
         }
     }
@@ -232,9 +248,9 @@ class SharedViewModel : ViewModel() {
     suspend fun saveData(userData: UserData, context: Context) {
         try {
             firestore.collection("users").document(userData.userId).set(userData).await()
-            Toast.makeText(context, "Data saved successfully", Toast.LENGTH_SHORT).show()
+            showToast(context, "Data saved successfully")
         } catch (exception: Exception) {
-            Toast.makeText(context, "Error saving data: ${exception.message}", Toast.LENGTH_SHORT).show()
+            showToast(context, "Error saving data: ${exception.message}")
         }
     }
 
@@ -242,30 +258,9 @@ class SharedViewModel : ViewModel() {
     suspend fun deleteData(userID: String, context: Context) {
         try {
             firestore.collection("users").document(userID).delete().await()
-            Toast.makeText(context, "Data deleted successfully", Toast.LENGTH_SHORT).show()
+            showToast(context, "Data deleted successfully")
         } catch (exception: Exception) {
-            Toast.makeText(context, "Error deleting data: ${exception.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    // Method to get the current admin ID
-    fun getCurrentAdminId(): String? {
-        return _currentAdminId.value
-    }
-
-    suspend fun saveAdminProfile(adminId: String, name: String, address: String, context: Context) {
-        try {
-            val adminProfile = AdminProfile(
-                adminId = adminId,
-                name = name,
-                email = FirebaseAuth.getInstance().currentUser?.email ?: "",
-                address = address
-            )
-            firestore.collection("adminProfiles").document(adminId).set(adminProfile).await()
-            Toast.makeText(context, "Admin profile saved successfully", Toast.LENGTH_SHORT).show()
-            isFirstLogin.value = false // Set isFirstLogin to false after profile creation
-        } catch (e: Exception) {
-            Toast.makeText(context, "Error saving admin profile: ${e.message}", Toast.LENGTH_SHORT).show()
+            showToast(context, "Error deleting data: ${exception.message}")
         }
     }
 }

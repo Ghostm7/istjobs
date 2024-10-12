@@ -14,7 +14,7 @@ sealed class Screens(val route: String) {
     object GetDataScreen : Screens(route = "get_data_screen") // Get Data Screen route
     object ProfileScreen : Screens(route = "profile_screen") // Profile Screen route
     object AdminProfileScreen : Screens(route = "admin_profile") // Profile Screen route
-    object UserProfileScreen : Screens(route = "user_profile_screen")
+    object UserProfileScreen : Screens(route = "user_profile")
     object AdminFormScreen : Screens(route = "admin_form")
     object ForgotPasswordScreen : Screens(route = "forgot_password_screen") // Forgot Password Screen route
     object SettingsScreen : Screens(route = "settings_screen") // Settings Screen route
@@ -39,6 +39,11 @@ sealed class Screens(val route: String) {
 
     // New JobListScreen route
     object JobListScreen : Screens(route = "job_list_screen") // Add this line
+
+    // New JobUpdateScreen route
+    object JobUpdateScreen : Screens(route = "job_update/{jobId}") {
+        fun createRoute(jobId: String) = "job_update/$jobId"
+    }
 
 
 }

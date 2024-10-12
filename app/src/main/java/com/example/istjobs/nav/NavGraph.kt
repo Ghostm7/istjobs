@@ -1,5 +1,6 @@
 package com.example.istjobs.nav
 
+import JobUpdateScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -124,6 +125,18 @@ fun NavGraph(
             // Make sure to pass jobViewModel to JobDetailScreen
             if (jobId != null) {
                 JobDetailScreen(jobId = jobId, jobViewModel = jobViewModel, navController = navController)
+            }
+        }
+
+        // Add JobUpdateScreen route
+        composable(
+            route = "${Screens.JobUpdateScreen.route}/{jobId}", // Use the correct format for parameters
+            arguments = listOf(navArgument("jobId") { type = NavType.StringType }) // Specify jobId argument
+        ) { backStackEntry ->
+            val jobId = backStackEntry.arguments?.getString("jobId")
+            // Make sure to pass jobViewModel to JobUpdateScreen
+            if (jobId != null) {
+                JobUpdateScreen(jobId = jobId, jobViewModel = jobViewModel, navController = navController)
             }
         }
     }

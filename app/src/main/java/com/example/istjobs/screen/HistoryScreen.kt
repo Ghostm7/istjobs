@@ -1,18 +1,24 @@
 package com.example.istjobs.screen
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.istjobs.data.Application
 import com.example.istjobs.nav.Screens
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 @Composable
 fun HistoryScreen(navController: NavHostController, currentUserId: String) {
@@ -29,6 +35,7 @@ fun HistoryScreen(navController: NavHostController, currentUserId: String) {
         listenerRegistration = db.collection("applied") // Change to the actual collection name
             .whereEqualTo("userId", currentUserId) // Add a where clause to filter by user ID
             .addSnapshotListener { snapshot, e ->
+
                 loading = false
                 if (e != null) {
                     errorMessage = "Error fetching history: ${e.message}"
@@ -60,36 +67,50 @@ fun HistoryScreen(navController: NavHostController, currentUserId: String) {
         }
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = "Application History", style = MaterialTheme.typography.headlineMedium)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Go Back Button
-        Button(
-            onClick = {
-                navController.navigate(Screens.UserDashboardScreen.route) {
-                    popUpTo(Screens.UserDashboardScreen.route) { inclusive = true }
-                }
-            },
-            modifier = Modifier
-                .padding(8.dp) // Reduce padding around the button
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White) // Set background to white
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally // Center contents horizontally
         ) {
-            Text("Go Back")
-        }
+            // Go Back Button with Arrow Icon above the title
+            IconButton(
+                onClick = {
+                    navController.navigate(Screens.UserDashboardScreen.route) {
+                        popUpTo(Screens.UserDashboardScreen.route) { inclusive = true }
+                    }
+                },
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.Start) // Align to the start of the column
+            ) {
+                Icon(Icons.Filled.ArrowBack, contentDescription = "Go Back", tint = Color(0xFF6200EE)) // Set icon color to purple
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp)) // Space between arrow and title
 
-        if (loading) {
-            CircularProgressIndicator()
-        } else if (errorMessage != null) {
-            BasicText(errorMessage ?: "")
-        } else if (history.isEmpty()) {
-            BasicText("No history found.")
-        } else {
-            history.forEach { application ->
-                HistoryItem(application)
-                Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Application History",
+                style = MaterialTheme.typography.headlineMedium.copy(color = MaterialTheme.colorScheme.primary) // Use primary color from the theme
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (loading) {
+                CircularProgressIndicator()
+            } else if (errorMessage != null) {
+                BasicText(errorMessage ?: "")
+            } else if (history.isEmpty()) {
+                BasicText("No history found.")
+            } else {
+                history.forEach { application ->
+                    HistoryItem(application)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
     }
@@ -111,3 +132,4 @@ fun HistoryItem(application: Application) {
         }
     }
 }
+

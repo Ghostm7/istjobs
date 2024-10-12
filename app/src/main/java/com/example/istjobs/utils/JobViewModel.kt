@@ -2,12 +2,17 @@ package com.example.istjobs.utils
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.istjobs.data.Application
 import com.example.istjobs.data.Job
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -51,6 +56,43 @@ class JobViewModel : ViewModel() {
                 fetchJobs() // Refresh the job list after deletion
             }
             .addOnFailureListener { e -> Log.e("JobViewModel", "Error deleting job: ${e.message}") }
+    }
+
+    // Get a specific job by ID
+    fun getJobById(jobId: String): Flow<Job?> {
+        return flow {
+            try {
+                val jobDoc = db.collection("jobs").document(jobId).get().await()
+                val job = jobDoc.toObject(Job::class.java)
+                emit(job) // Emit the job as Flow
+            } catch (e: Exception) {
+                Log.e("JobViewModel", "Error getting job by ID: ${e.message}")
+                emit(null)
+            }
+        }
+    }
+
+    // Update a specific job by ID with new parameters
+    fun updateJob(jobId: String, title: String, description: String, startDate: String, expiryDate: String, vacancies: Int) {
+        viewModelScope.launch {
+            try {
+                // Reference to the job document in Firestore
+                val jobDocRef = db.collection("jobs").document(jobId)
+                jobDocRef.update(
+                    mapOf(
+                        "title" to title,
+                        "description" to description,
+                        "startDate" to startDate,
+                        "expiryDate" to expiryDate,
+                        "vacancies" to vacancies
+                    )
+                ).await() // Update job fields in Firestore
+                Log.d("JobViewModel", "Job updated with ID: $jobId")
+                fetchJobs() // Refresh the job list after updating
+            } catch (e: Exception) {
+                Log.e("JobViewModel", "Error updating job: ${e.message}")
+            }
+        }
     }
 
     // Fetch applications from Firestore

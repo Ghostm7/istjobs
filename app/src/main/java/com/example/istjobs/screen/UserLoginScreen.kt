@@ -123,7 +123,14 @@ fun UserLoginScreen(
                         coroutineScope.launch {
                             sharedViewModel.signIn(email, password, "user") { isSuccess ->
                                 if (isSuccess) {
-                                    navController.navigate(Screens.UserProfileScreen.route) // Navigate to UserDashboardScreen
+                                    // Check if user has a profile after successful login
+                                    sharedViewModel.checkUserProfile { hasProfile ->
+                                        if (hasProfile) {
+                                            navController.navigate(Screens.UserDashboardScreen.route) // Redirect to UserDashboardScreen
+                                        } else {
+                                            navController.navigate(Screens.UserProfileScreen.route) // Redirect to profile setup
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -154,3 +161,4 @@ fun UserLoginScreen(
         }
     }
 }
+

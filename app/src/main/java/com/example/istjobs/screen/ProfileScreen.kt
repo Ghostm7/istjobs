@@ -34,7 +34,7 @@ fun ProfileScreen(navController: NavHostController) {
     var gender by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
-    var qualification by remember { mutableStateOf("") }
+    var qualifications by remember { mutableStateOf("") } // Changed here
     var experience by remember { mutableStateOf("") }
 
     // Fetch user profile data
@@ -46,8 +46,8 @@ fun ProfileScreen(navController: NavHostController) {
                     gender = document.getString("gender") ?: ""
                     address = document.getString("address") ?: ""
                     phoneNumber = document.getString("phoneNumber") ?: ""
-                    qualification = document.getString("qualification") ?: "" // Fetch qualification
-                    experience = document.getString("experience") ?: "" // Fetch experience
+                    qualifications = document.getString("qualifications") ?: "" // Changed here
+                    experience = document.getString("experience") ?: ""
                 }
             }
             .addOnFailureListener { e ->
@@ -55,41 +55,67 @@ fun ProfileScreen(navController: NavHostController) {
             }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color.White),
+        contentAlignment = Alignment.Center // Center content inside the Box
     ) {
-        Text(
-            text = "Profile",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            elevation = CardDefaults.cardElevation(8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White) // Set card background color
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center // Center content vertically
+            ) {
+                Text(
+                    text = "Profile",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color(0xFF6c5ce7) // Purple color
+                )
 
-        Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-        // Display User Details
-        Text("Name: $name", style = MaterialTheme.typography.bodyLarge)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Gender: $gender", style = MaterialTheme.typography.bodyLarge)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Address: $address", style = MaterialTheme.typography.bodyLarge)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Phone Number: $phoneNumber", style = MaterialTheme.typography.bodyLarge)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Qualification: $qualification", style = MaterialTheme.typography.bodyLarge) // Display qualification
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Experience: $experience", style = MaterialTheme.typography.bodyLarge) // Display experience
+                // Display User Details
+                Text("Name: $name", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Gender: $gender", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Address: $address", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Phone Number: $phoneNumber", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Qualifications: $qualifications", style = MaterialTheme.typography.bodyLarge, color = Color.Black) // Changed here
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Experience: $experience", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
-        Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-        // Edit Profile Button
-        Button(onClick = {
-            navController.navigate(Screens.UserProfileScreen.route)
-        }) {
-            Text("Edit Profile")
+                // Edit Profile Button
+                Button(onClick = {
+                    navController.navigate(Screens.UserProfileScreen.route)
+                }) {
+                    Text("Edit Profile", color = Color.Black)
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Go Back Button
+                Button(onClick = {
+                    navController.navigate(Screens.UserDashboardScreen.route) {
+                        popUpTo(Screens.ProfileScreen.route) { inclusive = true }
+                    }
+                }) {
+                    Text("Go Back", color = Color.Black)
+                }
+            }
         }
     }
 }

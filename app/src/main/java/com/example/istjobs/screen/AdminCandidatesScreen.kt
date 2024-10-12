@@ -1,6 +1,7 @@
 package com.example.istjobs.screen
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
@@ -23,8 +24,8 @@ import com.example.istjobs.utils.JobViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-
 
 @Composable
 fun AdminCandidatesScreen(navController: NavHostController, jobViewModel: JobViewModel) {
@@ -68,8 +69,35 @@ fun AdminCandidatesScreen(navController: NavHostController, jobViewModel: JobVie
         }
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = "Candidates", style = MaterialTheme.typography.headlineMedium)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .background(Color.White) // Set background color to white
+    ) {
+        // Go Back Arrow Button on top left
+        IconButton(onClick = {
+            navController.navigate(Screens.AdminDashboardScreen.route) {
+                popUpTo(Screens.AdminDashboardScreen.route) { inclusive = true }
+            }
+        }) {
+            Icon(
+                imageVector = Icons.Filled.ArrowBack,
+                contentDescription = "Go Back",
+                tint = Color(0xFF6200EA) // Purple color for the arrow
+            )
+        }
+
+        // Centered "Candidates" title
+        Text(
+            text = "Candidates",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary, // Set text color to primary
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            textAlign = TextAlign.Center // Center the title
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -91,17 +119,6 @@ fun AdminCandidatesScreen(navController: NavHostController, jobViewModel: JobVie
                 innerTextField()
             }
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Go Back Button
-        Button(onClick = {
-            navController.navigate(Screens.AdminDashboardScreen.route) {
-                popUpTo(Screens.AdminDashboardScreen.route) { inclusive = true }
-            }
-        }) {
-            Text("Go Back")
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

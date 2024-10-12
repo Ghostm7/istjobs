@@ -35,10 +35,9 @@ fun UserProfileScreen(navController: NavHostController) {
     var gender by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
-    var qualification by remember { mutableStateOf("") }
+    var qualifications by remember { mutableStateOf("") }
     var experience by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(true) }
-    var isNewUser by remember { mutableStateOf(false) }
 
     // Load user profile data when the screen is first displayed
     LaunchedEffect(Unit) {
@@ -49,24 +48,9 @@ fun UserProfileScreen(navController: NavHostController) {
                     gender = document.getString("gender") ?: ""
                     address = document.getString("address") ?: ""
                     phoneNumber = document.getString("phoneNumber") ?: ""
-                    qualification = document.getString("qualification") ?: ""
+                    qualifications = document.getString("qualifications") ?: ""
                     experience = document.getString("experience") ?: ""
-                    loading = false
-
-                    // Navigate to dashboard if profile is complete
-                    if (name.isNotEmpty() && gender.isNotEmpty() && address.isNotEmpty() &&
-                        phoneNumber.isNotEmpty() && qualification.isNotEmpty() &&
-                        experience.isNotEmpty()) {
-                        navController.navigate(Screens.UserDashboardScreen.route) {
-                            popUpTo(Screens.UserProfileScreen.route) { inclusive = true }
-                        }
-                    }
-                } else {
-                    isNewUser = true
-                    loading = false
                 }
-            }
-            .addOnFailureListener {
                 loading = false
             }
     }
@@ -80,63 +64,84 @@ fun UserProfileScreen(navController: NavHostController) {
             CircularProgressIndicator()
         }
     } else {
-        // Render the UI for editing profile if new user or incomplete profile
-        if (isNewUser || name.isEmpty() || gender.isEmpty() || address.isEmpty() ||
-            phoneNumber.isEmpty() || qualification.isEmpty() || experience.isEmpty()) {
-            Column(
+        // Render the UI for editing profile
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White), // Ensure the background is white
+            contentAlignment = Alignment.Center // Center the content
+        ) {
+            Card(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White)
+                    .fillMaxWidth(0.9f) // Set width to 90% of the screen
                     .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                colors = CardDefaults.cardColors(containerColor = Color.White), // Set the card's background to white
+                elevation = CardDefaults.cardElevation(8.dp)
             ) {
-                Text(
-                    text = "User Profile",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Input Fields
-                TextField(value = name, onValueChange = { name = it }, label = { Text("Name") })
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(value = gender, onValueChange = { gender = it }, label = { Text("Gender") })
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(value = address, onValueChange = { address = it }, label = { Text("Address") })
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(value = phoneNumber, onValueChange = { phoneNumber = it }, label = { Text("Phone Number") })
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(value = qualification, onValueChange = { qualification = it }, label = { Text("Qualification") })
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(value = experience, onValueChange = { experience = it }, label = { Text("Experience") })
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Save Button
-                Button(onClick = {
-                    // Handle save logic here
-                    val userData = hashMapOf(
-                        "name" to name,
-                        "gender" to gender,
-                        "address" to address,
-                        "phoneNumber" to phoneNumber,
-                        "qualification" to qualification,
-                        "experience" to experience
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "User Profile",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
 
-                    // Save user profile data to Firestore under "userProfiles"
-                    db.collection("userProfiles").document(userId)
-                        .set(userData)
-                        .addOnSuccessListener {
-                            navController.navigate(Screens.UserDashboardScreen.route) {
-                                popUpTo(Screens.UserProfileScreen.route) { inclusive = true }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Input Fields
+                    TextField(value = name, onValueChange = { name = it }, label = { Text("Name") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(value = gender, onValueChange = { gender = it }, label = { Text("Gender") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(value = address, onValueChange = { address = it }, label = { Text("Address") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(value = phoneNumber, onValueChange = { phoneNumber = it }, label = { Text("Phone Number") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(value = qualifications, onValueChange = { qualifications = it }, label = { Text("Qualifications") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(value = experience, onValueChange = { experience = it }, label = { Text("Experience") })
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Save Button
+                    Button(onClick = {
+                        val userData = hashMapOf(
+                            "name" to name,
+                            "gender" to gender,
+                            "address" to address,
+                            "phoneNumber" to phoneNumber,
+                            "qualifications" to qualifications,
+                            "experience" to experience
+                        )
+
+                        // Save user profile data to Firestore under "userProfiles"
+                        db.collection("userProfiles").document(userId)
+                            .set(userData)
+                            .addOnSuccessListener {
+                                navController.navigate(Screens.UserDashboardScreen.route) {
+                                    popUpTo(Screens.UserProfileScreen.route) { inclusive = true }
+                                }
                             }
+                            .addOnFailureListener { e ->
+                                // Handle the error (e.g., show a message)
+                            }
+                    }) {
+                        Text("Save Profile")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Go Back Button
+                    Button(onClick = {
+                        navController.navigate(Screens.ProfileScreen.route) {
+                            popUpTo(Screens.UserProfileScreen.route) { inclusive = true }
                         }
-                        .addOnFailureListener { e ->
-                            // Handle the error (e.g., show a message)
-                        }
-                }) {
-                    Text("Save Profile")
+                    }) {
+                        Text("Go Back")
+                    }
                 }
             }
         }

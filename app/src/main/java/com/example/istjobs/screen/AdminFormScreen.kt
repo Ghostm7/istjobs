@@ -59,51 +59,66 @@ fun AdminFormScreen(navController: NavHostController) {
         }
     } else {
         // Render the UI for editing profile
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(Color.White),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "Admin Profile",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .wrapContentHeight()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Admin Profile",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-            // Input Fields
-            TextField(value = name, onValueChange = { name = it }, label = { Text("Name") })
-            Spacer(modifier = Modifier.height(8.dp))
-            TextField(value = address, onValueChange = { address = it }, label = { Text("Address") })
-            Spacer(modifier = Modifier.height(8.dp))
-            TextField(value = phoneNumber, onValueChange = { phoneNumber = it }, label = { Text("Phone Number") })
-            Spacer(modifier = Modifier.height(8.dp))
+                    // Input Fields
+                    TextField(value = name, onValueChange = { name = it }, label = { Text("Name") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(value = address, onValueChange = { address = it }, label = { Text("Address") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(value = phoneNumber, onValueChange = { phoneNumber = it }, label = { Text("Phone Number") })
+                    Spacer(modifier = Modifier.height(8.dp))
 
-            // Save Button
-            Button(onClick = {
-                // Handle save logic here
-                val userData = hashMapOf(
-                    "name" to name,
-                    "address" to address,
-                    "phoneNumber" to phoneNumber
-                )
+                    // Save Button
+                    Button(onClick = {
+                        // Handle save logic here
+                        val userData = hashMapOf(
+                            "name" to name,
+                            "address" to address,
+                            "phoneNumber" to phoneNumber
+                        )
 
-                // Save user profile data to Firestore under "userProfiles"
-                db.collection("adminProfiles").document(userId)
-                    .set(userData)
-                    .addOnSuccessListener {
-                        navController.navigate(Screens.AdminDashboardScreen.route) {
-                            popUpTo(Screens.AdminFormScreen.route) { inclusive = true }
-                        }
+                        // Save user profile data to Firestore under "userProfiles"
+                        db.collection("adminProfiles").document(userId)
+                            .set(userData)
+                            .addOnSuccessListener {
+                                navController.navigate(Screens.AdminDashboardScreen.route) {
+                                    popUpTo(Screens.AdminFormScreen.route) { inclusive = true }
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                // Handle the error (e.g., show a message)
+                            }
+                    }) {
+                        Text("Save Profile")
                     }
-                    .addOnFailureListener { e ->
-                        // Handle the error (e.g., show a message)
-                    }
-            }) {
-                Text("Save Profile")
+                }
             }
         }
     }
