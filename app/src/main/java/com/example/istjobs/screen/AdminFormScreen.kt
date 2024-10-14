@@ -118,6 +118,17 @@ fun AdminFormScreen(navController: NavHostController) {
                     }) {
                         Text("Save Profile")
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Go Back Button
+                    Button(onClick = {
+                        navController.navigate(Screens.AdminProfileScreen.route) {
+                            popUpTo(Screens.AdminFormScreen.route) { inclusive = true }
+                        }
+                    }) {
+                        Text("Go Back")
+                    }
                 }
             }
         }

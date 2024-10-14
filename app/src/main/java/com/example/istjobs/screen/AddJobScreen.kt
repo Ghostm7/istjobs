@@ -24,88 +24,114 @@ fun AddJobScreen(navController: NavHostController, jobViewModel: JobViewModel) {
     var expiryDate by remember { mutableStateOf("") }
     var vacancies by remember { mutableStateOf("") }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .background(Color.White),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color.White), // Set the background of the whole screen to white
+        contentAlignment = Alignment.Center
     ) {
-        // Go Back Button
-        Button(onClick = {
-            navController.navigate(Screens.AdminDashboardScreen.route) {
-                popUpTo(Screens.AdminDashboardScreen.route) { inclusive = true }
+        Card(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White), // Set Card background to white
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Add Job",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary // Set title color to primary
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Job Title Input
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Job Title") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Job Description Input
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Job Description") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                )
+
+                // Company Input
+                OutlinedTextField(
+                    value = company,
+                    onValueChange = { company = it },
+                    label = { Text("Company") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Start Date Input
+                OutlinedTextField(
+                    value = startDate,
+                    onValueChange = { startDate = it },
+                    label = { Text("Start Date (e.g., 01/01/2024)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Expiry Date Input
+                OutlinedTextField(
+                    value = expiryDate,
+                    onValueChange = { expiryDate = it },
+                    label = { Text("Expiry Date (e.g., 01/31/2024)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Vacancies Input
+                OutlinedTextField(
+                    value = vacancies,
+                    onValueChange = { vacancies = it },
+                    label = { Text("Number of Vacancies") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Add Job Button
+                Button(onClick = {
+                    val newJob = Job(
+                        id = UUID.randomUUID().toString(),
+                        title = title,
+                        description = description,
+                        company = company,
+                        startDate = startDate,
+                        expiryDate = expiryDate,
+                        vacancies = vacancies.toIntOrNull() ?: 0
+                    )
+                    jobViewModel.addJob(newJob)
+                    navController.navigate(Screens.AdminDashboardScreen.route)
+                }) {
+                    Text("Add Job")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Go Back Button
+                Button(onClick = {
+                    navController.navigate(Screens.JobListScreen.route) {
+                        popUpTo(Screens.JobListScreen.route) { inclusive = true }
+                    }
+                }) {
+                    Text("Go Back")
+                }
             }
-        }) {
-            Text("Go Back")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(text = "Add Job", style = MaterialTheme.typography.headlineMedium)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Job Title Input
-        OutlinedTextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("Job Title") }
-        )
-
-        // Job Description Input
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Job Description") },
-            modifier = Modifier.height(100.dp)
-        )
-
-        // Company Input
-        OutlinedTextField(
-            value = company,
-            onValueChange = { company = it },
-            label = { Text("Company") }
-        )
-
-        // Start Date Input
-        OutlinedTextField(
-            value = startDate,
-            onValueChange = { startDate = it },
-            label = { Text("Start Date (e.g., 01/01/2024)") }
-        )
-
-        // Expiry Date Input
-        OutlinedTextField(
-            value = expiryDate,
-            onValueChange = { expiryDate = it },
-            label = { Text("Expiry Date (e.g., 01/31/2024)") }
-        )
-
-        // Vacancies Input
-        OutlinedTextField(
-            value = vacancies,
-            onValueChange = { vacancies = it },
-            label = { Text("Number of Vacancies") }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = {
-            // Generate a unique String ID for the new Job
-            val newJob = Job(
-                id = UUID.randomUUID().toString(),
-                title = title,
-                description = description,
-                company = company,
-                startDate = startDate,
-                expiryDate = expiryDate,
-                vacancies = vacancies.toIntOrNull() ?: 0
-            )
-            jobViewModel.addJob(newJob) // Add the job to the ViewModel
-            navController.navigate(Screens.AdminDashboardScreen.route) // Navigate back
-        }) {
-            Text("Add Job")
         }
     }
 }
+

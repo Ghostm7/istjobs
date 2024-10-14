@@ -169,6 +169,8 @@ fun AdminCandidatesScreen(navController: NavHostController, jobViewModel: JobVie
 
 @Composable
 fun CandidateItem(application: Application, onStatusChange: (String) -> Unit, onDelete: () -> Unit) {
+    var showDialog by remember { mutableStateOf(false) } // State for the confirmation dialog
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -203,15 +205,41 @@ fun CandidateItem(application: Application, onStatusChange: (String) -> Unit, on
                     Text("Reject")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                // Delete Button with trash can icon
-                IconButton(onClick = { onDelete() }) {
+                // Delete Button with gray trash can icon
+                IconButton(onClick = { showDialog = true }) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = "Delete",
-                        tint = Color.Red // Change color as needed
+                        tint = Color.Gray // Change color to gray
                     )
                 }
             }
         }
+    }
+
+    // Show confirmation dialog
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Delete Candidate") },
+            text = { Text("Are you sure you want to delete this candidate?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDelete() // Call the delete function passed from the parent
+                        showDialog = false // Dismiss the dialog
+                    }
+                ) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDialog = false } // Just dismiss the dialog
+                ) {
+                    Text("No")
+                }
+            }
+        )
     }
 }
