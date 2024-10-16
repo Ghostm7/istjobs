@@ -116,6 +116,13 @@ fun NavGraph(
             AdminCandidatesScreen(navController = navController, jobViewModel = jobViewModel)
         }
 
+        composable(Screens.AboutScreen.route) {
+            AboutScreen(navController) // Add AboutScreen here
+        }
+        composable(Screens.HelpCenterScreen.route) {
+            HelpCenterScreen(navController) // Add HelpCenterScreen here
+        }
+
         // Add JobDetailScreen route
         composable(
             route = "${Screens.JobDetailScreen.route}/{jobId}", // Use the correct format for parameters

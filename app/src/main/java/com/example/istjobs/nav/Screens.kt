@@ -22,6 +22,8 @@ sealed class Screens(val route: String) {
     object HistoryScreen : Screens(route = "history_screen") // New route for History screen
     object AddJobScreen : Screens(route = "add_job_screen")
     object ApplicationConfirmationScreen : Screens(route = "application_confirmation_screen")
+    object AboutScreen : Screens("about_screen")
+    object HelpCenterScreen : Screens("help_center_screen")
 
 
 

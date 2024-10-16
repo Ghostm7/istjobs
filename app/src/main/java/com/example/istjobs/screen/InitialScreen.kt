@@ -2,6 +2,7 @@ package com.example.istjobs.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,9 +58,9 @@ fun InitialScreen(navController: NavHostController) {
                 ) {
                     // User Icon
                     Image(
-                        painter = painterResource(id = R.drawable.user2), // Replace with your drawable resource
-                        contentDescription = "User  Icon",
-                        modifier = Modifier.size(100.dp) // Adjust size as needed
+                        painter = painterResource(id = R.drawable.user2),
+                        contentDescription = "User Icon",
+                        modifier = Modifier.size(100.dp)
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -67,18 +68,18 @@ fun InitialScreen(navController: NavHostController) {
                     // User Button
                     Button(
                         onClick = {
-                            navController.navigate(Screens.UserSignupScreen.route) // Navigate to SignupScreen
+                            navController.navigate(Screens.UserSignupScreen.route)
                         },
                         modifier = Modifier
                             .padding(8.dp)
-                            .width(150.dp) // Button width
-                            .height(40.dp), // Button height
+                            .width(150.dp)
+                            .height(40.dp),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "User ",
-                            fontSize = 16.sp, // Smaller font size
-                            color = Color.White // Button text color
+                            text = "User",
+                            fontSize = 16.sp,
+                            color = Color.White
                         )
                     }
                 }
@@ -101,9 +102,9 @@ fun InitialScreen(navController: NavHostController) {
                 ) {
                     // Admin Icon
                     Image(
-                        painter = painterResource(id = R.drawable.admin2), // Replace with your drawable resource
+                        painter = painterResource(id = R.drawable.admin2),
                         contentDescription = "Admin Icon",
-                        modifier = Modifier.size(100.dp) // Adjust size as needed
+                        modifier = Modifier.size(100.dp)
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -111,22 +112,40 @@ fun InitialScreen(navController: NavHostController) {
                     // Admin Button
                     Button(
                         onClick = {
-                            navController.navigate(Screens.AdminSignupScreen.route) // Navigate to Admin Signup Screen
+                            navController.navigate(Screens.AdminSignupScreen.route)
                         },
                         modifier = Modifier
                             .padding(8.dp)
-                            .width(150.dp) // Button width
-                            .height(40.dp), // Button height
+                            .width(150.dp)
+                            .height(40.dp),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
                             text = "Admin",
-                            fontSize = 16.sp, // Smaller font size
-                            color = Color.White // Button text color
+                            fontSize = 16.sp,
+                            color = Color.White
                         )
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // About Icon
+            AboutIcon(navController)
         }
     }
+}
+
+@Composable
+fun AboutIcon(navController: NavHostController) {
+    Image(
+        painter = painterResource(id = R.drawable.abouticon), // Replace with your About icon drawable
+        contentDescription = "About Icon",
+        modifier = Modifier
+            .size(50.dp) // Adjust size as needed
+            .clickable {
+                navController.navigate(Screens.AboutScreen.route) // Navigate to AboutScreen
+            }
+    )
 }
